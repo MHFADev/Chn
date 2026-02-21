@@ -39,6 +39,16 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
                         card.type.replace('global_', '').replace('_', ' ').toUpperCase()
     );
 
+    const getCornerSymbol = () => {
+        switch (card.color) {
+            case 'red': return <path d="M50 85 C50 85 10 55 10 30 C10 10 35 10 50 30 C65 10 90 10 90 30 C90 55 50 85 50 85 Z" fill={iconColor} stroke={strokeColor} strokeWidth="5" strokeLinejoin="round" />; // Heart/Flame
+            case 'blue': return <path d="M50 15 L85 55 A25 25 0 0 1 15 55 Z" fill={iconColor} stroke={strokeColor} strokeWidth="5" strokeLinejoin="round" />; // Drop
+            case 'green': return <path d="M50 15 C80 15 90 45 50 85 C10 45 20 15 50 15 Z" fill={iconColor} stroke={strokeColor} strokeWidth="5" strokeLinejoin="round" />; // Leaf/Spade
+            case 'yellow': return <polygon points="50,10 65,40 100,45 75,70 80,100 50,85 20,100 25,70 0,45 35,40" fill={iconColor} stroke={strokeColor} strokeWidth="5" strokeLinejoin="round" />; // Star
+            default: return <circle cx="50" cy="50" r="30" fill={iconColor} stroke={strokeColor} strokeWidth="5" />;
+        }
+    };
+
     const getCenterSVG = () => {
         const val = card.type === 'number' ? card.value : displayValue;
 
@@ -46,8 +56,12 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
         if (card.type === 'number' || card.type === '+2' || parseInt(val as string)) {
             return (
                 <g>
-                    <text x="50" y="55" fontSize="55" fontWeight="900" textAnchor="middle" alignmentBaseline="middle" fill={strokeColor} stroke={strokeColor} strokeWidth="12" strokeLinejoin="round" fontFamily="Impact, sans-serif">{val}</text>
-                    <text x="50" y="55" fontSize="55" fontWeight="900" textAnchor="middle" alignmentBaseline="middle" fill={iconColor} fontFamily="Impact, sans-serif">{val}</text>
+                    {/* Uno style tilted oval background */}
+                    <ellipse cx="50" cy="50" rx="42" ry="30" fill="#fdfbf7" stroke={strokeColor} strokeWidth="6" transform="rotate(-30 50 50)" />
+                    <ellipse cx="50" cy="50" rx="42" ry="30" fill={iconColor} stroke="none" transform="rotate(-30 50 50)" />
+
+                    <text x="50" y="55" fontSize="45" fontWeight="900" textAnchor="middle" alignmentBaseline="middle" fill={strokeColor} stroke={strokeColor} strokeWidth="12" strokeLinejoin="round" fontFamily="Impact, sans-serif">{val}</text>
+                    <text x="50" y="55" fontSize="45" fontWeight="900" textAnchor="middle" alignmentBaseline="middle" fill="#fff" fontFamily="Impact, sans-serif">{val}</text>
                 </g>
             );
         }
@@ -140,7 +154,12 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
 
             {/* Top Left Index */}
             <div className="flex flex-col items-center w-fit z-10" style={{ color: iconColor }}>
-                <span className="text-xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1px #18181b' }}>{displayValue}</span>
+                <span className="text-2xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1.5px #18181b' }}>{displayValue}</span>
+                {card.color !== 'wild' && (
+                    <svg width="12" height="12" viewBox="0 0 100 100" className="mt-0.5">
+                        {getCornerSymbol()}
+                    </svg>
+                )}
             </div>
 
             {/* Center SVG Graphic */}
@@ -152,7 +171,12 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
 
             {/* Bottom Right Index (Rotated) */}
             <div className="flex flex-col items-center w-fit self-end rotate-180 z-10" style={{ color: iconColor }}>
-                <span className="text-xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1px #18181b' }}>{displayValue}</span>
+                <span className="text-2xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1.5px #18181b' }}>{displayValue}</span>
+                {card.color !== 'wild' && (
+                    <svg width="12" height="12" viewBox="0 0 100 100" className="mt-0.5">
+                        {getCornerSymbol()}
+                    </svg>
+                )}
             </div>
 
             {/* Badges for special cards */}
