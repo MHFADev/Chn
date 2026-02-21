@@ -35,7 +35,13 @@ export interface ActiveStack {
 }
 
 export interface RoomSettings {
-    turnTimeLimit: number; // in seconds
+    turnTimeLimit: number;
+    enableNumbers?: boolean;
+    enableActions?: boolean;
+    enableNormalDraws?: boolean;
+    enableAbnormalDraws?: boolean;
+    enableChaosCards?: boolean;
+    allowedColors?: CardColor[];
 }
 
 export interface GameState {

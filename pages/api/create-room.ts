@@ -23,8 +23,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     // Generate a 6-char room code
     const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    // Initial deck and deal
-    const fullDeck = createBaseDeck();
+    const defaultSettings = {
+        turnTimeLimit: timerLimit,
+        enableNumbers: true,
+        enableActions: true,
+        enableNormalDraws: true,
+        enableAbnormalDraws: true,
+        enableChaosCards: true,
+        allowedColors: undefined
+    };
+
+    const fullDeck = createBaseDeck(defaultSettings);
 
     // For a new room, we just create the state. Deal hands later when game starts, or deal immediately for 1 player (though game usually needs 2).
     // Let's hold off dealing until game 'status' switches to 'playing'.
@@ -51,9 +60,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         globalCooldown: 0,
         turnCount: 0,
         turnStartTime: Date.now(),
-        settings: {
-            turnTimeLimit: timerLimit
-        },
+        settings: defaultSettings,
         winnerId: null,
     };
 

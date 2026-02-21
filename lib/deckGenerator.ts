@@ -1,4 +1,4 @@
-import { Card, CardColor, CardType } from './types';
+import { Card, CardColor, CardType, RoomSettings } from './types';
 
 export const COLORS: CardColor[] = ['red', 'blue', 'green', 'yellow', 'cyan'];
 
@@ -8,7 +8,7 @@ export const COLORS: CardColor[] = ['red', 'blue', 'green', 'yellow', 'cyan'];
  * - 40% Normal Draws (+2, +4, +6)
  * - 10% Abnormal Draws (+20, +60, +100, +200)
  */
-export function createBaseDeck(): Card[] {
+export function createBaseDeck(settings?: RoomSettings): Card[] {
     const deck: Card[] = [];
 
     const getSecondary = () => {
@@ -19,48 +19,53 @@ export function createBaseDeck(): Card[] {
         return undefined;
     };
 
-    // --- 50% STANDARD CARDS (approx 60 cards) ---
-    COLORS.forEach(color => {
-        // 10 Numbers (0-9) per color = 40 cards
-        for (let i = 0; i <= 9; i++) {
-            deck.push({ id: crypto.randomUUID(), color, type: 'number', value: i });
-        }
-        // Actions (2 Skip, 2 Reverse per color) = 16 cards
-        ['skip', 'reverse'].forEach(type => {
-            deck.push({ id: crypto.randomUUID(), color, type: type as CardType });
-            deck.push({ id: crypto.randomUUID(), color, type: type as CardType });
-        });
-    });
-    // 4 pure wilds = 4 cards
-    for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: 'wild' }); }
-    // Total Standard = 60 cards.
+    const allowedColors = settings?.allowedColors && settings.allowedColors.length > 0 ? settings.allowedColors : COLORS;
+    const enableNumbers = settings?.enableNumbers ?? true;
+    const enableActions = settings?.enableActions ?? true;
+    const enableNormalDraws = settings?.enableNormalDraws ?? true;
+    const enableAbnormalDraws = settings?.enableAbnormalDraws ?? true;
+    const enableChaosCards = settings?.enableChaosCards ?? true;
 
-    // --- 40% NORMAL DRAWS (approx 48 cards) ---
-    // (+2, +4, +6) -> 16 of each = 48 cards
-    COLORS.forEach(color => {
-        // We need 16 cards per type, spread across 4 or 5 colors. 
-        // We have 5 colors, so 3 of each per color = 15 cards per type. Close enough.
-        ['+2', '+4', '+6'].forEach(type => {
-            for (let i = 0; i < 3; i++) {
-                deck.push({ id: crypto.randomUUID(), color, type: type as CardType, secondaryAction: getSecondary() });
+    if (enableNumbers || enableActions) {
+        allowedColors.forEach(color => {
+            if (enableNumbers) {
+                for (let i = 0; i <= 9; i++) {
+                    deck.push({ id: crypto.randomUUID(), color, type: 'number', value: i });
+                }
+            }
+            if (enableActions) {
+                ['skip', 'reverse'].forEach(type => {
+                    deck.push({ id: crypto.randomUUID(), color, type: type as CardType });
+                    deck.push({ id: crypto.randomUUID(), color, type: type as CardType });
+                });
             }
         });
-    }); // Total Normal = 45 cards.
+        for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: 'wild' }); }
+    }
 
-    // --- 10% ABNORMAL DRAWS (approx 12 cards) ---
-    // All abnormal are 'wild' color for maximum chaos.
-    for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+20', secondaryAction: getSecondary() }); }
-    for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+60', secondaryAction: getSecondary() }); }
-    for (let i = 0; i < 2; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+100', secondaryAction: getSecondary() }); }
-    for (let i = 0; i < 2; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+200', secondaryAction: getSecondary() }); }
-    // Total Abnormal = 12 cards.
+    if (enableNormalDraws) {
+        allowedColors.forEach(color => {
+            ['+2', '+4', '+6'].forEach(type => {
+                for (let i = 0; i < 3; i++) {
+                    deck.push({ id: crypto.randomUUID(), color, type: type as CardType, secondaryAction: getSecondary() });
+                }
+            });
+        });
+    }
 
-    // --- UNIQUE CHAOS CARDS (Additional Flavour) ---
-    // 1 of each of these cool mechanics just to keep the game fresh.
-    const chaosCards: CardType[] = ['reflect', 'steal_hand', 'hand_shuffle', 'double_turn', 'lock_color', 'bomb_timer', 'copy_card', 'chaos_wild'];
-    chaosCards.forEach(type => {
-        deck.push({ id: crypto.randomUUID(), color: 'wild', type });
-    });
+    if (enableAbnormalDraws) {
+        for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+20', secondaryAction: getSecondary() }); }
+        for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+60', secondaryAction: getSecondary() }); }
+        for (let i = 0; i < 2; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+100', secondaryAction: getSecondary() }); }
+        for (let i = 0; i < 2; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+200', secondaryAction: getSecondary() }); }
+    }
+
+    if (enableChaosCards) {
+        const chaosCards: CardType[] = ['reflect', 'steal_hand', 'hand_shuffle', 'double_turn', 'lock_color', 'bomb_timer', 'copy_card', 'chaos_wild'];
+        chaosCards.forEach(type => {
+            deck.push({ id: crypto.randomUUID(), color: 'wild', type });
+        });
+    }
 
     return shuffleDeck(deck);
 }

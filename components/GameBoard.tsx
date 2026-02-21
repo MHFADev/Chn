@@ -28,6 +28,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
 
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
     const [volume, setVolume] = React.useState(() => getMasterVolume());
+    const [turnLimit, setTurnLimit] = React.useState<number>(() => state.settings?.turnTimeLimit || 20);
+    const [enableNumbers, setEnableNumbers] = React.useState<boolean>(state.settings?.enableNumbers ?? true);
+    const [enableActions, setEnableActions] = React.useState<boolean>(state.settings?.enableActions ?? true);
+    const [enableNormalDraws, setEnableNormalDraws] = React.useState<boolean>(state.settings?.enableNormalDraws ?? true);
+    const [enableAbnormalDraws, setEnableAbnormalDraws] = React.useState<boolean>(state.settings?.enableAbnormalDraws ?? true);
+    const [enableChaosCards, setEnableChaosCards] = React.useState<boolean>(state.settings?.enableChaosCards ?? true);
+    const [allowedColors, setAllowedColors] = React.useState<string[]>(state.settings?.allowedColors ?? ['red','blue','green','yellow','cyan']);
 
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = parseFloat(e.target.value);
@@ -36,7 +43,33 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
         if (val > 0) playSound('click');
     };
 
-    const timeRemaining = Math.max(0, 20 - Math.floor((now - state.turnStartTime) / 1000));
+    const timeRemaining = Math.max(0, (state.settings?.turnTimeLimit || 20) - Math.floor((now - state.turnStartTime) / 1000));
+
+    const isHost = state.players[0]?.id === playerId && state.status === 'waiting';
+    const toggleColor = (c: string) => {
+        setAllowedColors(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+    };
+    const saveSettings = async () => {
+        playSound('click');
+        await fetch('/api/action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                roomId: state.roomId,
+                playerId,
+                action: 'update_settings',
+                settings: {
+                    turnTimeLimit: turnLimit,
+                    enableNumbers,
+                    enableActions,
+                    enableNormalDraws,
+                    enableAbnormalDraws,
+                    enableChaosCards,
+                    allowedColors
+                }
+            })
+        });
+    };
 
     return (
         <div className="flex-1 w-full flex flex-col items-center justify-between p-6 relative z-0">
@@ -185,6 +218,63 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                         className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
                                     />
                                 </label>
+                                {isHost && (
+                                    <>
+                                        <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
+                                            <div className="flex items-center justify-between">
+                                                <span>Turn Timer (sec)</span>
+                                                <span>{turnLimit}s</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min={5} max={120} step={5}
+                                                value={turnLimit}
+                                                onChange={e => setTurnLimit(parseInt(e.target.value))}
+                                                className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
+                                            />
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
+                                                <input type="checkbox" checked={enableNumbers} onChange={e => setEnableNumbers(e.target.checked)} />
+                                                Numbers
+                                            </label>
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
+                                                <input type="checkbox" checked={enableActions} onChange={e => setEnableActions(e.target.checked)} />
+                                                Actions
+                                            </label>
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
+                                                <input type="checkbox" checked={enableNormalDraws} onChange={e => setEnableNormalDraws(e.target.checked)} />
+                                                Normal Draws
+                                            </label>
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
+                                                <input type="checkbox" checked={enableAbnormalDraws} onChange={e => setEnableAbnormalDraws(e.target.checked)} />
+                                                Abnormal Draws
+                                            </label>
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest col-span-2">
+                                                <input type="checkbox" checked={enableChaosCards} onChange={e => setEnableChaosCards(e.target.checked)} />
+                                                Chaos Cards
+                                            </label>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['red','blue','green','yellow','cyan'].map(c => (
+                                                <button
+                                                    key={c}
+                                                    onClick={() => toggleColor(c)}
+                                                    className={`px-3 py-1 rounded-lg border-2 border-zinc-900 font-black uppercase text-xs ${allowedColors.includes(c) ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-900'}`}
+                                                >
+                                                    {c}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={saveSettings}
+                                            className="w-full bg-yellow-400 text-zinc-900 border-4 border-zinc-900 border-b-[8px] px-6 py-3 rounded-2xl font-black text-base tracking-widest uppercase hover:translate-y-1 hover:border-b-4 transition-all"
+                                            style={{ fontFamily: 'Impact' }}
+                                        >
+                                            Save Room Settings
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </motion.div>

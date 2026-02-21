@@ -3,7 +3,7 @@ import { gameStateStore } from './inMemoryStore';
 import { GameEngine } from '../../lib/gameEngine';
 import { StackResolver } from '../../lib/stackResolver';
 import { drawCard } from '../../lib/probabilityController';
-import { dealStartingHands } from '../../lib/deckGenerator';
+import { dealStartingHands, createBaseDeck } from '../../lib/deckGenerator';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
@@ -36,6 +36,22 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(200).json(state);
     }
 
+    if (action === 'update_settings') {
+        if (state.status !== 'waiting') return res.status(400).json({ error: 'Cannot change settings after game starts' });
+        const next = req.body.settings || {};
+        const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+        state.settings.turnTimeLimit = clamp(typeof next.turnTimeLimit === 'number' ? next.turnTimeLimit : state.settings.turnTimeLimit, 5, 120);
+        if (typeof next.enableNumbers === 'boolean') state.settings.enableNumbers = next.enableNumbers;
+        if (typeof next.enableActions === 'boolean') state.settings.enableActions = next.enableActions;
+        if (typeof next.enableNormalDraws === 'boolean') state.settings.enableNormalDraws = next.enableNormalDraws;
+        if (typeof next.enableAbnormalDraws === 'boolean') state.settings.enableAbnormalDraws = next.enableAbnormalDraws;
+        if (typeof next.enableChaosCards === 'boolean') state.settings.enableChaosCards = next.enableChaosCards;
+        if (Array.isArray(next.allowedColors)) state.settings.allowedColors = next.allowedColors;
+        state.deck = createBaseDeck(state.settings);
+        state.lastAction = 'Room settings updated';
+        return res.status(200).json(state);
+    }
+
     if (state.status !== 'playing') {
         return res.status(400).json({ error: 'Game is not active' });
     }
@@ -44,7 +60,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(403).json({ error: 'Not your turn' });
     }
 
-    state.turnStartTime = Date.now(); // Reset timer on action
+    state.turnStartTime = Date.now();
 
     if (action === 'play') {
         // Multi-play combo support: accept cardIds array, fallback to single cardId
@@ -89,6 +105,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
         state.turnCount++;
         state.turnIndex = GameEngine.getNextTurnIndex(state);
+        state.turnStartTime = Date.now();
 
         const cardTypeName = firstCard.type === 'number' ? firstCard.value : firstCard.type.toUpperCase();
         state.lastAction = `${player.name} played ${cardsToPlay.length > 1 ? cardsToPlay.length + 'x ' : ''}${cardTypeName}`;
@@ -118,6 +135,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
         state.turnCount++;
         state.turnIndex = GameEngine.getNextTurnIndex(state);
+        state.turnStartTime = Date.now();
         return res.status(200).json(state);
     }
 
