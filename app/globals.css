@@ -1,104 +1,57 @@
 @import "tailwindcss";
 
 @theme {
-  --color-neon-red: #ff2a2a;
-  --color-neon-blue: #00f0ff;
-  --color-neon-green: #39ff14;
-  --color-neon-yellow: #ffea00;
-  --color-neon-purple: #b52aff;
+  --color-min-red: #ef4444;
+  --color-min-blue: #3b82f6;
+  --color-min-green: #22c55e;
+  --color-min-yellow: #eab308;
+  --color-min-purple: #a855f7;
+  --color-min-bg: #09090b;
+  /* zinc-950 */
+  --color-min-panel: #18181b;
+  /* zinc-900 */
 }
 
 @layer base {
   body {
-    background-color: #0a0a0f;
-    color: #ffffff;
-    font-family: 'Inter', sans-serif;
+    background-color: var(--color-min-bg);
+    color: #fafafa;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     overflow-x: hidden;
+    /* Subtle dot pattern for professional sterile look */
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl rounded-2xl;
+    @apply bg-zinc-900 border border-zinc-800 shadow-sm rounded-xl;
+  }
+
+  .card-base {
+    @apply bg-zinc-50 border border-zinc-200 text-zinc-900 shadow-sm rounded-xl overflow-hidden relative;
   }
 }
 
-@keyframes shake {
-  0% {
-    transform: translate(1px, 1px) rotate(0deg);
-  }
+/* Smooth, subtle float animation replacing harsh shake/glitch */
+@keyframes soft-float {
 
-  10% {
-    transform: translate(-1px, -2px) rotate(-1deg);
-  }
-
-  20% {
-    transform: translate(-3px, 0px) rotate(1deg);
-  }
-
-  30% {
-    transform: translate(3px, 2px) rotate(0deg);
-  }
-
-  40% {
-    transform: translate(1px, -1px) rotate(1deg);
+  0%,
+  100% {
+    transform: translateY(0);
   }
 
   50% {
-    transform: translate(-1px, 2px) rotate(-1deg);
-  }
-
-  60% {
-    transform: translate(-3px, 1px) rotate(0deg);
-  }
-
-  70% {
-    transform: translate(3px, 1px) rotate(-1deg);
-  }
-
-  80% {
-    transform: translate(-1px, -1px) rotate(1deg);
-  }
-
-  90% {
-    transform: translate(1px, 2px) rotate(0deg);
-  }
-
-  100% {
-    transform: translate(1px, -2px) rotate(-1deg);
+    transform: translateY(-4px);
   }
 }
 
-.shake-animation {
-  animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+.animate-soft-float {
+  animation: soft-float 4s ease-in-out infinite;
 }
 
-@keyframes glitch {
-  0% {
-    transform: translate(0)
-  }
-
-  20% {
-    transform: translate(-5px, 5px)
-  }
-
-  40% {
-    transform: translate(-5px, -5px)
-  }
-
-  60% {
-    transform: translate(5px, 5px)
-  }
-
-  80% {
-    transform: translate(5px, -5px)
-  }
-
-  100% {
-    transform: translate(0)
-  }
-}
-
-.glitch-animation {
-  animation: glitch 0.2s linear infinite;
+/* Selection aesthetics */
+::selection {
+  background: rgba(255, 255, 255, 0.2);
 }
