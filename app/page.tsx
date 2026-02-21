@@ -1,65 +1,113 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 export default function Home() {
+  const router = useRouter();
+  const [name, setName] = useState('');
+  const [roomCode, setRoomCode] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleCreate = async () => {
+    if (!name.trim()) return setError('Please enter your name');
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/create-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerName: name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      // Save playerId to session storage so room page knows who we are
+      sessionStorage.setItem('playerId', data.playerId);
+      router.push(`/room/${data.roomId}`);
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  const handleJoin = async () => {
+    if (!name.trim()) return setError('Please enter your name');
+    if (!roomCode.trim()) return setError('Please enter room code');
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/join-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: roomCode, playerName: name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      sessionStorage.setItem('playerId', data.playerId);
+      router.push(`/room/${data.roomId}`);
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-[#0a0a0f] to-black">
+      {/* Decorative glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-neon-purple/20 blur-[150px] rounded-full pointer-events-none" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md glass-panel p-8 relative z-10 flex flex-col gap-6"
+      >
+        <div className="text-center">
+          <h1 className="text-4xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-neon-red via-neon-yellow to-neon-red drop-shadow-[0_0_10px_rgba(255,42,42,0.8)] pb-2 uppercase">Chaos Global</h1>
+          <p className="text-white/50 text-sm tracking-widest mt-1">Multiplayer Card Engine</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="space-y-4 mt-4">
+          {error && <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm text-center animate-pulse">{error}</div>}
+
+          <input
+            type="text"
+            placeholder="PLAYER NAME"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition-all uppercase tracking-wider font-bold text-center"
+            maxLength={12}
+          />
+
+          <input
+            type="text"
+            placeholder="ROOM CODE"
+            value={roomCode}
+            onChange={(e) => setRoomCode(e.target.value)}
+            className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-all uppercase tracking-wider font-bold text-center"
+            maxLength={6}
+          />
+
+          <div className="flex gap-4 pt-4">
+            <button
+              onClick={handleCreate}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-neon-blue text-black font-black uppercase tracking-wider py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              CREATE
+            </button>
+            <button
+              onClick={handleJoin}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-green-600 to-neon-green text-black font-black uppercase tracking-wider py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              JOIN
+            </button>
+          </div>
         </div>
-      </main>
+      </motion.div>
     </div>
   );
 }
