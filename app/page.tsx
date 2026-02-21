@@ -25,8 +25,12 @@ export default function Home() {
 
       sessionStorage.setItem('playerId', data.playerId);
       router.push(`/room/${data.roomId}`);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
       setLoading(false);
     }
   };
@@ -47,8 +51,12 @@ export default function Home() {
 
       sessionStorage.setItem('playerId', data.playerId);
       router.push(`/room/${data.roomId}`);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
       setLoading(false);
     }
   };

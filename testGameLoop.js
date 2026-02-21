@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const http = require('http');
 
 async function fetchJSON(path, method, body) {
@@ -38,7 +39,6 @@ async function run() {
     console.log('\n--- TEST: Join Room ---');
     const joinResp = await fetchJSON('/api/join-room', 'POST', { roomId, playerName: 'Bob' });
     console.log('Joined player Id:', joinResp.playerId);
-    const p2Id = joinResp.playerId;
 
     console.log('\n--- TEST: Start Game ---');
     const startResp = await fetchJSON('/api/action', 'POST', { roomId, playerId: p1Id, action: 'start_game' });

@@ -69,6 +69,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (playerId) {
         const pIdx = safeState.players.findIndex(p => p.id === playerId);
         if (pIdx !== -1) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (safeState.players[pIdx] as any).hand = state.players[pIdx].hand;
         }
     }

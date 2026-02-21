@@ -18,7 +18,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
     const isMyTurn = state.players[state.turnIndex]?.id === playerId;
     const opponents = state.players.filter(p => p.id !== playerId);
 
-    const timeRemaining = Math.max(0, 20 - Math.floor((Date.now() - state.turnStartTime) / 1000));
+    const [now, setNow] = React.useState(() => Date.now());
+
+    React.useEffect(() => {
+        const interval = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const timeRemaining = Math.max(0, 20 - Math.floor((now - state.turnStartTime) / 1000));
 
     return (
         <div className="flex-1 w-full flex flex-col items-center justify-between p-6 relative z-0">
@@ -69,7 +76,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                     {topDiscard ? (
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1, rotate: Math.random() * 8 - 4 }}
+                            animate={{ scale: 1, opacity: 1, rotate: (topDiscard.id.charCodeAt(0) % 8) - 4 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                             className="absolute inset-0 z-10"
                         >

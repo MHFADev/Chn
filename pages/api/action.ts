@@ -90,7 +90,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         state.turnCount++;
         state.turnIndex = GameEngine.getNextTurnIndex(state);
 
-        let cardTypeName = firstCard.type === 'number' ? firstCard.value : firstCard.type.toUpperCase();
+        const cardTypeName = firstCard.type === 'number' ? firstCard.value : firstCard.type.toUpperCase();
         state.lastAction = `${player.name} played ${cardsToPlay.length > 1 ? cardsToPlay.length + 'x ' : ''}${cardTypeName}`;
 
         // Check win condition

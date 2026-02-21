@@ -22,6 +22,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
             router.push('/');
             return;
         }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPlayerId(pId);
 
         const fetchState = async () => {
@@ -82,7 +83,11 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
     };
 
     if (!state || !playerId) {
-        return <div className="h-screen w-full flex items-center justify-center text-zinc-500 font-mono tracking-widest text-sm animate-pulse bg-zinc-950">CONNECTING...</div>;
+        return (
+            <div className="h-screen w-full flex flex-col items-center justify-center text-zinc-500 font-mono tracking-widest text-sm animate-pulse bg-zinc-950">
+                {error ? <div className="text-red-500">{error}</div> : 'CONNECTING...'}
+            </div>
+        );
     }
 
     const me = state.players.find(p => p.id === playerId);

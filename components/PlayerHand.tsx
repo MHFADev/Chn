@@ -18,6 +18,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setWindowWidth(window.innerWidth);
         const handleResize = () => setWindowWidth(window.innerWidth);
         window.addEventListener('resize', handleResize);
@@ -100,6 +101,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
 
     // Auto-clear selection if it's no longer our turn
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (!isMyTurn) setSelectedIds([]);
     }, [isMyTurn]);
 
