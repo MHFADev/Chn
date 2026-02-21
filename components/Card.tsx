@@ -20,11 +20,12 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
     const isChaos = ['+20', '+30', 'reflect', 'steal_hand', 'hand_shuffle', 'double_turn', 'lock_color', 'bomb_timer', 'copy_card', 'chaos_wild'].includes(card.type);
 
     // Vivid, flat cartoon colors
-    const hexColors = {
+    const hexColors: Record<CardType['color'], string> = {
         red: "#ef4444",
         blue: "#3b82f6",
         green: "#22c55e",
         yellow: "#eab308",
+        cyan: "#06b6d4",
         wild: "#3f3f46" // Dark gray for wild base
     };
 
@@ -45,6 +46,7 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
             case 'blue': return <path d="M50 15 L85 55 A25 25 0 0 1 15 55 Z" fill={iconColor} stroke={strokeColor} strokeWidth="5" strokeLinejoin="round" />; // Drop
             case 'green': return <path d="M50 15 C80 15 90 45 50 85 C10 45 20 15 50 15 Z" fill={iconColor} stroke={strokeColor} strokeWidth="5" strokeLinejoin="round" />; // Leaf/Spade
             case 'yellow': return <polygon points="50,10 65,40 100,45 75,70 80,100 50,85 20,100 25,70 0,45 35,40" fill={iconColor} stroke={strokeColor} strokeWidth="5" strokeLinejoin="round" />; // Star
+            case 'cyan': return <polygon points="50,10 80,50 50,90 20,50" fill={iconColor} stroke={strokeColor} strokeWidth="5" strokeLinejoin="round" />; // Diamond
             default: return <circle cx="50" cy="50" r="30" fill={iconColor} stroke={strokeColor} strokeWidth="5" />;
         }
     };

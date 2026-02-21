@@ -1,6 +1,6 @@
 import { Card, CardColor, CardType } from './types';
 
-export const COLORS: CardColor[] = ['red', 'blue', 'green', 'yellow'];
+export const COLORS: CardColor[] = ['red', 'blue', 'green', 'yellow', 'cyan'];
 
 /**
  * Generates the base deck excluding Global Chaos cards depending on rules.

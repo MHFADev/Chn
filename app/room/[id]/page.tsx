@@ -14,6 +14,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
     const [state, setState] = useState<GameState | null>(null);
     const [playerId, setPlayerId] = useState<string | null>(null);
     const [error, setError] = useState('');
+    const [pendingWildCardId, setPendingWildCardId] = useState<string | null>(null);
 
     useEffect(() => {
         const pId = sessionStorage.getItem('playerId');
@@ -56,12 +57,19 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
         });
     };
 
-    const handlePlayCard = async (cardId: string) => {
+    const handlePlayCard = async (cardId: string, color?: string) => {
+        const card = state?.players.find(p => p.id === playerId)?.hand.find(c => c.id === cardId);
+        if (card?.color === 'wild' && !color) {
+            setPendingWildCardId(cardId);
+            return;
+        }
+
         await fetch('/api/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, playerId, action: 'play', cardId })
+            body: JSON.stringify({ roomId, playerId, action: 'play', cardId, color })
         });
+        setPendingWildCardId(null);
     };
 
     const handleDrawCard = async () => {
@@ -158,6 +166,37 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
                         />}
                     </div>
                 </>
+            )}
+
+            {/* Wild Card Color Picker Modal */}
+            {pendingWildCardId && (
+                <div className="fixed inset-0 bg-zinc-950/90 backdrop-blur-md z-[200] flex items-center justify-center p-6">
+                    <div className="bg-zinc-900 border-4 border-zinc-800 p-8 rounded-3xl max-w-sm w-full flex flex-col items-center gap-6 shadow-2xl relative">
+                        <button
+                            onClick={() => setPendingWildCardId(null)}
+                            className="absolute top-4 right-4 text-zinc-500 hover:text-white font-black text-xl"
+                        >×</button>
+                        <h3 className="text-2xl font-black uppercase tracking-widest text-center" style={{ fontFamily: 'Impact' }}>CHOOSE COLOR</h3>
+                        <div className="grid grid-cols-2 gap-4 w-full">
+                            {[
+                                { id: 'red', color: '#ef4444', label: 'RED' },
+                                { id: 'blue', color: '#3b82f6', label: 'BLUE' },
+                                { id: 'green', color: '#22c55e', label: 'GREEN' },
+                                { id: 'yellow', color: '#eab308', label: 'YELLOW' },
+                                { id: 'cyan', color: '#06b6d4', label: 'CYAN' },
+                            ].map(c => (
+                                <button
+                                    key={c.id}
+                                    onClick={() => handlePlayCard(pendingWildCardId, c.id)}
+                                    className="h-16 rounded-xl flex items-center justify-center font-black tracking-widest text-lg text-white border-2 border-zinc-950 shadow-[4px_4px_0px_#18181b] hover:translate-y-1 hover:shadow-none transition-all active:scale-95"
+                                    style={{ backgroundColor: c.color, fontFamily: 'Impact' }}
+                                >
+                                    {c.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

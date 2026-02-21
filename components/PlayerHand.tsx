@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Card as CardType } from '../lib/types';
 import { Card } from './Card';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +14,14 @@ interface PlayerHandProps {
 export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyTurn, disabled, playableCardIds }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [showInventory, setShowInventory] = useState(false);
+    const [windowWidth, setWindowWidth] = useState(1024);
+
+    useEffect(() => {
+        setWindowWidth(window.innerWidth);
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const MAX_VISIBLE_CARDS = 15;
 
@@ -39,22 +47,29 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
 
     // Fanning math parameters
     const getCardStyle = (index: number, total: number) => {
-        const maxRot = Math.min(25, total * 3);
+        const isMobile = windowWidth < 768;
+        // Tighter rotation bounds for mobile
+        const maxRot = Math.min(isMobile ? 18 : 25, total * (isMobile ? 2.5 : 3));
         const step = total > 1 ? (maxRot * 2) / (total - 1) : 0;
         const rot = -maxRot + index * step;
-        const yOffset = Math.abs(rot) * 0.5;
+        const yOffset = Math.abs(rot) * (isMobile ? 0.3 : 0.5);
+
+        // More negative margin = more overlap
+        let margin = '-1.5rem';
+        if (total > 5) margin = isMobile ? '-3.8rem' : '-2.5rem';
+        if (total > 10) margin = isMobile ? '-4.6rem' : '-3.5rem'; // extreme squeeze for 15 on mobile
 
         return {
             rotateZ: rot,
             y: yOffset,
-            margin: total > 5 ? '-2.5rem' : '-1.5rem'
+            margin
         };
     };
 
     return (
         <>
             <div
-                className="relative w-full overflow-hidden p-8 flex justify-center items-end h-[280px]"
+                className="relative w-full overflow-hidden px-2 py-8 sm:p-8 flex justify-center items-end h-[240px] sm:h-[280px]"
                 ref={containerRef}
             >
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10 transition-colors">
