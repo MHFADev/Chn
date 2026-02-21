@@ -144,9 +144,9 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                                         transformOrigin: 'bottom center',
                                         zIndex: index,
                                     }}
-                                    className="hover:z-50"
+                                    className="hover:z-50 cursor-pointer pointer-events-auto"
                                 >
-                                    <motion.div style={{ rotateZ: style.rotateZ, y: isSelected ? -30 : 0 }} className="transition-transform duration-300">
+                                    <motion.div style={{ rotateZ: style.rotateZ, y: isSelected ? -30 : 0 }} className="transition-transform duration-300 w-fit h-fit">
                                         <Card
                                             card={card}
                                             onClick={() => handleCardClick(card)}

@@ -171,7 +171,7 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
             <div className="absolute inset-2 border-2 rounded-lg pointer-events-none opacity-20" style={{ borderColor: '#ffffff' }} />
 
             {/* Top Left Index */}
-            <div className="flex flex-col items-center w-fit z-10 text-white">
+            <div className="flex flex-col items-center w-fit z-10 text-white pointer-events-none">
                 <span className="text-2xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1.5px #18181b' }}>{displayValue}</span>
                 {card.color !== 'wild' && (
                     <svg width="14" height="14" viewBox="0 0 100 100" className="mt-0.5">
@@ -188,7 +188,7 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
             </div>
 
             {/* Bottom Right Index (Rotated) */}
-            <div className="flex flex-col items-center w-fit self-end rotate-180 z-10 text-white">
+            <div className="flex flex-col items-center w-fit self-end rotate-180 z-10 text-white pointer-events-none">
                 <span className="text-2xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1.5px #18181b' }}>{displayValue}</span>
                 {card.color !== 'wild' && (
                     <svg width="14" height="14" viewBox="0 0 100 100" className="mt-0.5">
@@ -199,7 +199,7 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
 
             {/* Badges for special cards */}
             {(isChaos || isGlobal) && (
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap z-20">
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap z-20 pointer-events-none">
                     {isGlobal ? 'GLOBAL' : 'CHAOS'}
                 </div>
             )}
