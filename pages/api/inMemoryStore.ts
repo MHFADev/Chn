@@ -16,3 +16,8 @@ export const gameStateStore: Map<string, GameState> = globalAny.gameStateStore;
 export const MAX_ROOMS = 20;
 export const MAX_PLAYERS_PER_ROOM = 6;
 export const TURN_TIMEOUT_MS = 20000; // 20 seconds
+
+// Next.js expects files in pages/api to have a default export
+export default function handler(req: any, res: any) {
+    res.status(404).json({ error: 'Not found' });
+}
