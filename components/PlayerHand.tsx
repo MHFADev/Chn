@@ -2,6 +2,7 @@ import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Card as CardType } from '../lib/types';
 import { Card } from './Card';
 import { motion, AnimatePresence } from 'framer-motion';
+import { playSound } from '../lib/audio/SoundManager';
 
 interface PlayerHandProps {
     cards: CardType[];
@@ -81,11 +82,17 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                 if (firstSelected &&
                     ((card.type === 'number' && firstSelected.type === 'number' && card.value === firstSelected.value) ||
                         (card.type !== 'number' && card.type === firstSelected.type))) {
+                    playSound('click');
                     setSelectedIds(prev => [...prev, card.id]);
+                } else {
+                    playSound('invalidPlay');
                 }
             } else {
                 if (playableCardIds?.includes(card.id)) {
+                    playSound('click');
                     setSelectedIds([card.id]);
+                } else {
+                    playSound('invalidPlay');
                 }
             }
         }
@@ -117,7 +124,8 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                     </div>
                     {inventoryCardsCount > 0 && (
                         <button
-                            onClick={() => setShowInventory(true)}
+                            onClick={() => { playSound('click'); setShowInventory(true); }}
+                            onMouseEnter={() => playSound('hover')}
                             className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 rounded-full text-[10px] font-bold text-blue-400 tracking-widest shadow-sm transition-colors uppercase cursor-pointer"
                         >
                             + {inventoryCardsCount} INVENTORY

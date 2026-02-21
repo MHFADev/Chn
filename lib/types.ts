@@ -34,6 +34,18 @@ export interface ActiveStack {
     targets: string[]; // player ids who need to draw
 }
 
+export interface RoomSettings {
+    turnTimeLimit: number;
+    enableNumbers?: boolean;
+    enableActions?: boolean;
+    enableNormalDraws?: boolean;
+    enableAbnormalDraws?: boolean;
+    enableChaosCards?: boolean;
+    allowedColors?: CardColor[];
+    allowedNormalDraws?: ('+2' | '+4' | '+6')[];
+    allowedAbnormalDraws?: ('+20' | '+60' | '+100' | '+200')[];
+}
+
 export interface GameState {
     roomId: string;
     status: 'waiting' | 'playing' | 'finished';
@@ -46,6 +58,7 @@ export interface GameState {
     globalCooldown: number; // turns until next global can be played
     turnCount: number; // total turns taken so far, used for early overpower prevention
     turnStartTime: number; // timestamp
+    settings: RoomSettings;
     winnerId: string | null;
     lastAction?: string;
     lockedColor?: CardColor | null;

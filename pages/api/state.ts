@@ -24,10 +24,27 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     // Check Turn Timeout if playing
     if (state.status === 'playing') {
         const now = Date.now();
-        // --- AI AUTO-PLAY DISABLED ---
-        // if (now - state.turnStartTime > TURN_TIMEOUT_MS) {
-        // ... AI logic removed based on user feedback to prevent auto-play in multiplayer.
-        // }
+        const timeLimitMs = (state.settings?.turnTimeLimit || 20) * 1000;
+
+        if (now - state.turnStartTime > timeLimitMs) {
+            // -- Timeout Penalty logic --
+            const currentPlayer = state.players[state.turnIndex];
+
+            // Draw 1 card as penalty
+            const drawnCard = drawCard(state);
+            if (drawnCard) {
+                currentPlayer.hand.push(drawnCard);
+            }
+
+            // Skip their turn
+            state.turnIndex = GameEngine.getNextTurnIndex(state);
+            state.turnStartTime = Date.now();
+            state.lastAction = `${currentPlayer.name} ran out of time! Drew 1 card and skipped turn.`;
+
+            // Update global cooldown
+            if (state.globalCooldown > 0) state.globalCooldown--;
+            state.turnCount++;
+        }
     }
 
     // Return the state. In a real app, you might want to strip other players' hands to prevent cheating on client side.

@@ -1,8 +1,9 @@
 import React from 'react';
 import { GameState, Card as CardType } from '../lib/types';
 import { Card } from './Card';
-import { motion } from 'framer-motion';
-import { Cpu, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Cpu, User, Settings2, Volume2, VolumeX } from 'lucide-react';
+import { playSound, setMasterVolume, getMasterVolume } from '../lib/audio/SoundManager';
 
 interface GameBoardProps {
     state: GameState;
@@ -25,7 +26,54 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
         return () => clearInterval(interval);
     }, []);
 
-    const timeRemaining = Math.max(0, 20 - Math.floor((now - state.turnStartTime) / 1000));
+    const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+    const [volume, setVolume] = React.useState(() => getMasterVolume());
+    const [turnLimit, setTurnLimit] = React.useState<number>(() => state.settings?.turnTimeLimit || 20);
+    const [enableNumbers, setEnableNumbers] = React.useState<boolean>(state.settings?.enableNumbers ?? true);
+    const [enableActions, setEnableActions] = React.useState<boolean>(state.settings?.enableActions ?? true);
+    const [enableNormalDraws, setEnableNormalDraws] = React.useState<boolean>(state.settings?.enableNormalDraws ?? true);
+    const [enableAbnormalDraws, setEnableAbnormalDraws] = React.useState<boolean>(state.settings?.enableAbnormalDraws ?? true);
+    const [enableChaosCards, setEnableChaosCards] = React.useState<boolean>(state.settings?.enableChaosCards ?? true);
+    const [allowedColors, setAllowedColors] = React.useState<string[]>(state.settings?.allowedColors ?? ['red','blue','green','yellow','cyan']);
+    const [allowedNormalDraws, setAllowedNormalDraws] = React.useState<string[]>(state.settings?.allowedNormalDraws ?? ['+2','+4','+6']);
+    const [allowedAbnormalDraws, setAllowedAbnormalDraws] = React.useState<string[]>(state.settings?.allowedAbnormalDraws ?? ['+20','+60','+100','+200']);
+
+    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseFloat(e.target.value);
+        setVolume(val);
+        setMasterVolume(val);
+        if (val > 0) playSound('click');
+    };
+
+    const timeRemaining = Math.max(0, (state.settings?.turnTimeLimit || 20) - Math.floor((now - state.turnStartTime) / 1000));
+
+    const isHost = state.players[0]?.id === playerId && state.status === 'waiting';
+    const toggleColor = (c: string) => {
+        setAllowedColors(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+    };
+    const saveSettings = async () => {
+        playSound('click');
+        await fetch('/api/action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                roomId: state.roomId,
+                playerId,
+                action: 'update_settings',
+                settings: {
+                    turnTimeLimit: turnLimit,
+                    enableNumbers,
+                    enableActions,
+                    enableNormalDraws,
+                    enableAbnormalDraws,
+                    enableChaosCards,
+                    allowedColors,
+                    allowedNormalDraws,
+                    allowedAbnormalDraws
+                }
+            })
+        });
+    };
 
     return (
         <div className="flex-1 w-full flex flex-col items-center justify-between p-6 relative z-0">
@@ -134,6 +182,134 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                     </motion.div>
                 </div>
             )}
+
+            {/* Settings Button */}
+            <button
+                onClick={() => { playSound('click'); setIsSettingsOpen(true); }}
+                onMouseEnter={() => playSound('hover')}
+                className="absolute top-4 right-4 bg-white border-4 border-zinc-900 p-2 rounded-xl shadow-[4px_4px_0px_#18181b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#18181b] transition-all z-40 text-zinc-900"
+            >
+                <Settings2 size={24} />
+            </button>
+
+            {/* Settings Modal */}
+            <AnimatePresence>
+                {isSettingsOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6"
+                    >
+                        <div className="bg-white border-4 border-zinc-900 p-8 rounded-3xl max-w-sm w-full flex flex-col items-center gap-6 shadow-[8px_8px_0px_#18181b] relative">
+                            <button
+                                onClick={() => { playSound('click'); setIsSettingsOpen(false); }}
+                                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 font-black text-2xl transition-colors"
+                            >×</button>
+                            <h3 className="text-3xl font-black uppercase tracking-widest text-center text-zinc-900" style={{ fontFamily: 'Impact' }}>SETTINGS</h3>
+
+                            <div className="w-full flex flex-col gap-4">
+                                <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
+                                    <div className="flex items-center justify-between">
+                                        <span>Master Volume</span>
+                                        {volume > 0 ? <Volume2 size={20} /> : <VolumeX size={20} className="text-red-500" />}
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0" max="1" step="0.01"
+                                        value={volume}
+                                        onChange={handleVolumeChange}
+                                        className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
+                                    />
+                                </label>
+                                {isHost && (
+                                    <>
+                                        <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
+                                            <div className="flex items-center justify-between">
+                                                <span>Turn Timer (sec)</span>
+                                                <span>{turnLimit}s</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min={5} max={120} step={5}
+                                                value={turnLimit}
+                                                onChange={e => setTurnLimit(parseInt(e.target.value))}
+                                                className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
+                                            />
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
+                                                <input type="checkbox" checked={enableNumbers} onChange={e => setEnableNumbers(e.target.checked)} />
+                                                Numbers
+                                            </label>
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
+                                                <input type="checkbox" checked={enableActions} onChange={e => setEnableActions(e.target.checked)} />
+                                                Actions
+                                            </label>
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
+                                                <input type="checkbox" checked={enableNormalDraws} onChange={e => setEnableNormalDraws(e.target.checked)} />
+                                                Normal Draws
+                                            </label>
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
+                                                <input type="checkbox" checked={enableAbnormalDraws} onChange={e => setEnableAbnormalDraws(e.target.checked)} />
+                                                Abnormal Draws
+                                            </label>
+                                            <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest col-span-2">
+                                                <input type="checkbox" checked={enableChaosCards} onChange={e => setEnableChaosCards(e.target.checked)} />
+                                                Chaos Cards
+                                            </label>
+                                        </div>
+                                        {enableNormalDraws && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {['+2','+4','+6'].map(t => {
+                                                    const checked = allowedNormalDraws.includes(t);
+                                                    return (
+                                                        <label key={t} className={`px-3 py-1 rounded-lg border-2 border-zinc-900 font-black uppercase text-xs cursor-pointer ${checked ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-900'}`}>
+                                                            <input type="checkbox" className="hidden" checked={checked} onChange={() => setAllowedNormalDraws(prev => checked ? prev.filter(x => x !== t) : [...prev, t])} />
+                                                            {t}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                        {enableAbnormalDraws && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {['+20','+60','+100','+200'].map(t => {
+                                                    const checked = allowedAbnormalDraws.includes(t);
+                                                    return (
+                                                        <label key={t} className={`px-3 py-1 rounded-lg border-2 border-zinc-900 font-black uppercase text-xs cursor-pointer ${checked ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-900'}`}>
+                                                            <input type="checkbox" className="hidden" checked={checked} onChange={() => setAllowedAbnormalDraws(prev => checked ? prev.filter(x => x !== t) : [...prev, t])} />
+                                                            {t}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                        <div className="flex flex-wrap gap-2">
+                                            {['red','blue','green','yellow','cyan'].map(c => (
+                                                <button
+                                                    key={c}
+                                                    onClick={() => toggleColor(c)}
+                                                    className={`px-3 py-1 rounded-lg border-2 border-zinc-900 font-black uppercase text-xs ${allowedColors.includes(c) ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-900'}`}
+                                                >
+                                                    {c}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={saveSettings}
+                                            className="w-full bg-yellow-400 text-zinc-900 border-4 border-zinc-900 border-b-[8px] px-6 py-3 rounded-2xl font-black text-base tracking-widest uppercase hover:translate-y-1 hover:border-b-4 transition-all"
+                                            style={{ fontFamily: 'Impact' }}
+                                        >
+                                            Save Room Settings
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
         </div>
     );

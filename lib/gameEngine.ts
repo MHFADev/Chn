@@ -25,7 +25,10 @@ export class GameEngine {
         // 3. Normal UNO logic
         if (cardToPlay.color === 'wild') return true;
 
-        if (state.lockedColor && cardToPlay.color !== state.lockedColor) return false;
+        if (state.lockedColor) {
+            if (cardToPlay.color === state.lockedColor) return true;
+            return false;
+        }
 
         // Check explicit color match
         if (topCard.color === cardToPlay.color) {

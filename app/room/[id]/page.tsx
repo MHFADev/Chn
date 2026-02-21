@@ -6,6 +6,7 @@ import { GameEngine } from '../../../lib/gameEngine';
 import { GameBoard } from '../../../components/GameBoard';
 import { PlayerHand } from '../../../components/PlayerHand';
 import confetti from 'canvas-confetti';
+import { playSound } from '../../../lib/audio/SoundManager';
 
 export default function RoomPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -36,8 +37,15 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
                 const data = await res.json();
                 setState(data);
 
-                if (data.status === 'finished' && data.winnerId === pId) {
+                if (data.status === 'finished' && data.winnerId === pId && state?.status !== 'finished') {
+                    playSound('win');
                     confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, colors: ['#ffffff', '#a1a1aa', '#3f3f46'] });
+                } else if (state && data.turnCount > state.turnCount) {
+                    // Turn advanced, play generic turn swap or timeout if skipped
+                    if (data.lastAction?.includes('ran out of time')) playSound('timeout');
+                    else playSound('turnStart');
+                } else if (state && data.players.length > state.players.length) {
+                    playSound('playerJoined');
                 }
             } catch (err) {
                 console.error(err);
@@ -51,6 +59,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
     }, [roomId, router]);
 
     const handleStartGame = async () => {
+        playSound('gameStart');
         await fetch('/api/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -62,8 +71,19 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
         const ids = Array.isArray(cardIds) ? cardIds : [cardIds];
         const card = state?.players.find(p => p.id === playerId)?.hand.find(c => c.id === ids[0]);
         if (card?.color === 'wild' && !color) {
+            playSound('wildColor');
             setPendingWildCardIds(ids);
             return;
+        }
+
+        if (card?.type.includes('+') || card?.type === 'bomb_timer' || card?.type === 'chaos_wild') {
+            playSound('chaosGlobalCall');
+        } else if (card?.type === 'skip') {
+            playSound('skip');
+        } else if (card?.type === 'reverse') {
+            playSound('reverse');
+        } else {
+            playSound(ids.length > 1 ? 'playMulti' : 'playStandard');
         }
 
         await fetch('/api/action', {
@@ -75,6 +95,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
     };
 
     const handleDrawCard = async () => {
+        playSound('drawStandard');
         await fetch('/api/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
