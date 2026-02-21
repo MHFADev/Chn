@@ -20,14 +20,13 @@ export class StackResolver {
             state.activeStack.cards.push(card);
             state.activeStack.totalDraw += drawAmount;
 
-            // If it's a global chaos, all other players are targets.
-            if (card.type.startsWith('global_')) {
-                state.globalCooldown = 1; // cooldown active
+            // AoE Multiplayer Draws: If more than 2 players, EVERY draw card targets ALL opponents.
+            if (state.players.length > 2) {
                 state.activeStack.targets = state.players
                     .map(p => p.id)
-                    .filter(id => id !== player.id); // everyone except the person who played it
+                    .filter(id => id !== player.id);
             } else {
-                // Standard draw like +2, +20, +30
+                // 1v1: Targets the single next player
                 const nextPlayer = this.getNextPlayerIndex(state);
                 state.activeStack.targets = [state.players[nextPlayer].id];
             }
@@ -58,11 +57,12 @@ export class StackResolver {
     static getDrawAmount(type: string): number {
         switch (type) {
             case '+2': return 2;
+            case '+4': return 4;
+            case '+6': return 6;
             case '+20': return 20;
-            case '+30': return 30;
-            case 'global_+100': return 100;
-            case 'global_+200': return 200;
-            case 'global_+300': return 300;
+            case '+60': return 60;
+            case '+100': return 100;
+            case '+200': return 200;
             default: return 0;
         }
     }

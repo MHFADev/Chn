@@ -3,42 +3,62 @@ import { Card, CardColor, CardType } from './types';
 export const COLORS: CardColor[] = ['red', 'blue', 'green', 'yellow', 'cyan'];
 
 /**
- * Generates the base deck excluding Global Chaos cards depending on rules.
+ * Generates the base deck according to the new ratio rules:
+ * - 50% Standard (Numbers, Actions, Wilds)
+ * - 40% Normal Draws (+2, +4, +6)
+ * - 10% Abnormal Draws (+20, +60, +100, +200)
  */
 export function createBaseDeck(): Card[] {
     const deck: Card[] = [];
 
-    // Basic Cards
+    const getSecondary = () => {
+        if (Math.random() < 0.3) {
+            const actions: ('skip' | 'reverse' | 'wild')[] = ['skip', 'reverse', 'wild'];
+            return actions[Math.floor(Math.random() * actions.length)];
+        }
+        return undefined;
+    };
+
+    // --- 50% STANDARD CARDS (approx 60 cards) ---
     COLORS.forEach(color => {
-        // 0
-        deck.push({ id: crypto.randomUUID(), color, type: 'number', value: 0 });
-        // 1-9 (two of each)
-        for (let i = 1; i <= 9; i++) {
-            deck.push({ id: crypto.randomUUID(), color, type: 'number', value: i });
+        // 10 Numbers (0-9) per color = 40 cards
+        for (let i = 0; i <= 9; i++) {
             deck.push({ id: crypto.randomUUID(), color, type: 'number', value: i });
         }
-        // Actions: Skip, Reverse, +2 (two of each)
-        ['skip', 'reverse', '+2'].forEach(type => {
+        // Actions (2 Skip, 2 Reverse per color) = 16 cards
+        ['skip', 'reverse'].forEach(type => {
             deck.push({ id: crypto.randomUUID(), color, type: type as CardType });
             deck.push({ id: crypto.randomUUID(), color, type: type as CardType });
         });
     });
+    // 4 pure wilds = 4 cards
+    for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: 'wild' }); }
+    // Total Standard = 60 cards.
 
-    // Wild Cards (4 Wild, 4 Chaos Wild)
-    for (let i = 0; i < 4; i++) {
-        deck.push({ id: crypto.randomUUID(), color: 'wild', type: 'wild' });
-        deck.push({ id: crypto.randomUUID(), color: 'wild', type: 'chaos_wild' });
-    }
+    // --- 40% NORMAL DRAWS (approx 48 cards) ---
+    // (+2, +4, +6) -> 16 of each = 48 cards
+    COLORS.forEach(color => {
+        // We need 16 cards per type, spread across 4 or 5 colors. 
+        // We have 5 colors, so 3 of each per color = 15 cards per type. Close enough.
+        ['+2', '+4', '+6'].forEach(type => {
+            for (let i = 0; i < 3; i++) {
+                deck.push({ id: crypto.randomUUID(), color, type: type as CardType, secondaryAction: getSecondary() });
+            }
+        });
+    }); // Total Normal = 45 cards.
 
-    // Chaos Individual
-    const chaosCards: CardType[] = [
-        '+20', '+30', 'reflect', 'steal_hand', 'hand_shuffle',
-        'double_turn', 'lock_color', 'bomb_timer', 'copy_card'
-    ];
+    // --- 10% ABNORMAL DRAWS (approx 12 cards) ---
+    // All abnormal are 'wild' color for maximum chaos.
+    for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+20', secondaryAction: getSecondary() }); }
+    for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+60', secondaryAction: getSecondary() }); }
+    for (let i = 0; i < 2; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+100', secondaryAction: getSecondary() }); }
+    for (let i = 0; i < 2; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+200', secondaryAction: getSecondary() }); }
+    // Total Abnormal = 12 cards.
 
+    // --- UNIQUE CHAOS CARDS (Additional Flavour) ---
+    // 1 of each of these cool mechanics just to keep the game fresh.
+    const chaosCards: CardType[] = ['reflect', 'steal_hand', 'hand_shuffle', 'double_turn', 'lock_color', 'bomb_timer', 'copy_card', 'chaos_wild'];
     chaosCards.forEach(type => {
-        // 2 of each chaos card in the deck
-        deck.push({ id: crypto.randomUUID(), color: 'wild', type });
         deck.push({ id: crypto.randomUUID(), color: 'wild', type });
     });
 

@@ -45,40 +45,61 @@ export class GameEngine {
     }
 
     static applyCardEffect(state: GameState, card: Card, player: Player): void {
-        switch (card.type) {
-            case 'skip':
-                state.turnIndex = this.getNextTurnIndex(state); // Skips next
-                break;
-            case 'reverse':
-                state.direction = (state.direction === 1 ? -1 : 1) as 1 | -1;
-                if (state.players.length === 2) {
-                    state.turnIndex = this.getNextTurnIndex(state); // Reverse acts as skip in 2 player
+        const actionsToProcess = [card.type];
+        if (card.secondaryAction) {
+            actionsToProcess.push(card.secondaryAction);
+        }
+
+        actionsToProcess.forEach(action => {
+            switch (action) {
+                case 'skip':
+                    state.turnIndex = this.getNextTurnIndex(state); // Skips next
+                    break;
+                case 'reverse':
+                    state.direction = (state.direction === 1 ? -1 : 1) as 1 | -1;
+                    if (state.players.length === 2) {
+                        state.turnIndex = this.getNextTurnIndex(state); // Reverse acts as skip in 2 player
+                    }
+                    break;
+                case 'double_turn':
+                    // Normally turn advances at end of action. So we set a flag.
+                    // For simplicity, we just rewind turnIndex here so next step keeps it on same player
+                    state.direction = (state.direction === 1 ? -1 : 1) as 1 | -1;
+                    state.turnIndex = this.getNextTurnIndex(state);
+                    state.direction = (state.direction === 1 ? -1 : 1) as 1 | -1;
+                    break;
+                case 'hand_shuffle':
+                    // Shuffle all players' hands together
+                    const allCards = state.players.flatMap(p => p.hand);
+                    // Fisher-Yates shuffle
+                    for (let i = allCards.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
+                    }
+                    // Deal evenly
+                    let pIdx = 0;
+                    state.players.forEach(p => p.hand = []);
+                    for (const c of allCards) {
+                        state.players[pIdx].hand.push(c);
+                        pIdx = (pIdx + 1) % state.players.length;
+                    }
+                    break;
+                // Add complex logic as needed for steal_hand, lock_color, bomb_timer
+            }
+        });
+
+        // 10% Self-Draw Penalty for Abnormal Draw Cards (+20, +60, +100, +200)
+        const abnormalDraws = ['+20', '+60', '+100', '+200'];
+        if (abnormalDraws.includes(card.type)) {
+            const penaltyPercent = 0.1;
+            const drawAmount = StackResolver.getDrawAmount(card.type) * penaltyPercent;
+
+            for (let i = 0; i < drawAmount; i++) {
+                if (state.deck.length > 0) {
+                    const penaltyCard = state.deck.pop();
+                    if (penaltyCard) player.hand.push(penaltyCard);
                 }
-                break;
-            case 'double_turn':
-                // Normally turn advances at end of action. So we set a flag.
-                // For simplicity, we just rewind turnIndex here so next step keeps it on same player
-                state.direction = (state.direction === 1 ? -1 : 1) as 1 | -1;
-                state.turnIndex = this.getNextTurnIndex(state);
-                state.direction = (state.direction === 1 ? -1 : 1) as 1 | -1;
-                break;
-            case 'hand_shuffle':
-                // Shuffle all players' hands together
-                const allCards = state.players.flatMap(p => p.hand);
-                // Fisher-Yates shuffle
-                for (let i = allCards.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
-                }
-                // Deal evenly
-                let pIdx = 0;
-                state.players.forEach(p => p.hand = []);
-                for (const c of allCards) {
-                    state.players[pIdx].hand.push(c);
-                    pIdx = (pIdx + 1) % state.players.length;
-                }
-                break;
-            // Add complex logic as needed for steal_hand, lock_color, bomb_timer
+            }
         }
 
         // Decrement globals cooldown if active

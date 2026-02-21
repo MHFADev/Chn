@@ -2,18 +2,21 @@ export type CardColor = 'red' | 'blue' | 'green' | 'yellow' | 'cyan' | 'wild';
 
 export type CardType =
     | 'number'
-    | 'skip' | 'reverse' | '+2' | 'wild'
-    // Chaos Individual
-    | '+20' | '+30' | 'reflect' | 'steal_hand' | 'hand_shuffle'
-    | 'double_turn' | 'lock_color' | 'bomb_timer' | 'copy_card' | 'chaos_wild'
-    // Global Draw Chaos
-    | 'global_+100' | 'global_+200' | 'global_+300';
+    | 'skip' | 'reverse' | 'wild'
+    // Normal Draws (40%)
+    | '+2' | '+4' | '+6'
+    // Abnormal Draws (10%)
+    | '+20' | '+60' | '+100' | '+200'
+    // Unique Individual Chaos
+    | 'reflect' | 'steal_hand' | 'hand_shuffle'
+    | 'double_turn' | 'lock_color' | 'bomb_timer' | 'copy_card' | 'chaos_wild';
 
 export interface Card {
     id: string; // unique identifier per instance
     type: CardType;
     color: CardColor;
     value?: number; // for number cards
+    secondaryAction?: 'skip' | 'reverse' | 'wild'; // Dual effect chance
 }
 
 export interface Player {

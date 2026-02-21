@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { gameStateStore, TURN_TIMEOUT_MS } from './inMemoryStore';
 import { AIEngine } from '../../lib/aiEngine';
 import { GameEngine } from '../../lib/gameEngine';
-import { drawCardWithProbability } from '../../lib/probabilityController';
+import { drawCard } from '../../lib/probabilityController';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {
@@ -44,7 +44,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
                 state.lastAction = `${currentPlayer.name} (AI) played ${move.color} ${move.type}`;
             } else {
                 // Auto draw
-                const drawn = drawCardWithProbability(state, state.deck);
+                const drawn = drawCard(state);
                 currentPlayer.hand.push(drawn);
                 state.turnIndex = GameEngine.getNextTurnIndex(state);
                 state.turnStartTime = Date.now();

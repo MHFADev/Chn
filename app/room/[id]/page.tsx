@@ -14,7 +14,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
     const [state, setState] = useState<GameState | null>(null);
     const [playerId, setPlayerId] = useState<string | null>(null);
     const [error, setError] = useState('');
-    const [pendingWildCardId, setPendingWildCardId] = useState<string | null>(null);
+    const [pendingWildCardIds, setPendingWildCardIds] = useState<string[] | null>(null);
 
     useEffect(() => {
         const pId = sessionStorage.getItem('playerId');
@@ -57,19 +57,20 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
         });
     };
 
-    const handlePlayCard = async (cardId: string, color?: string) => {
-        const card = state?.players.find(p => p.id === playerId)?.hand.find(c => c.id === cardId);
+    const handlePlayCard = async (cardIds: string | string[], color?: string) => {
+        const ids = Array.isArray(cardIds) ? cardIds : [cardIds];
+        const card = state?.players.find(p => p.id === playerId)?.hand.find(c => c.id === ids[0]);
         if (card?.color === 'wild' && !color) {
-            setPendingWildCardId(cardId);
+            setPendingWildCardIds(ids);
             return;
         }
 
         await fetch('/api/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, playerId, action: 'play', cardId, color })
+            body: JSON.stringify({ roomId, playerId, action: 'play', cardIds: ids, color })
         });
-        setPendingWildCardId(null);
+        setPendingWildCardIds(null);
     };
 
     const handleDrawCard = async () => {
@@ -171,11 +172,11 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
             )}
 
             {/* Wild Card Color Picker Modal */}
-            {pendingWildCardId && (
+            {pendingWildCardIds && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
                     <div className="bg-white border-4 border-zinc-900 p-8 rounded-3xl max-w-sm w-full flex flex-col items-center gap-6 shadow-[8px_8px_0px_#18181b] relative">
                         <button
-                            onClick={() => setPendingWildCardId(null)}
+                            onClick={() => setPendingWildCardIds(null)}
                             className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 font-black text-2xl transition-colors"
                         >×</button>
                         <h3 className="text-3xl font-black uppercase tracking-widest text-center text-zinc-900" style={{ fontFamily: 'Impact' }}>CHOOSE COLOR</h3>
@@ -189,7 +190,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
                             ].map(c => (
                                 <button
                                     key={c.id}
-                                    onClick={() => handlePlayCard(pendingWildCardId, c.id)}
+                                    onClick={() => handlePlayCard(pendingWildCardIds, c.id)}
                                     className="h-16 rounded-2xl flex items-center justify-center font-black tracking-widest text-xl text-white border-4 border-zinc-900 shadow-[4px_4px_0px_#18181b] hover:translate-y-1 hover:shadow-[0px_0px_0px_#18181b] transition-all active:scale-95"
                                     style={{ backgroundColor: c.color, fontFamily: 'Impact' }}
                                 >

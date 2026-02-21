@@ -57,12 +57,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                     whileHover={isMyTurn ? { scale: 1.05, y: -4, rotateZ: -2 } : {}}
                     whileTap={isMyTurn ? { scale: 0.95 } : {}}
                     onClick={isMyTurn ? onDraw : undefined}
-                    className={`w-[110px] h-[160px] rounded-2xl border-4 border-zinc-900 bg-[#ef4444] shadow-[8px_8px_0px_#18181b] flex items-center justify-center cursor-pointer relative overflow-hidden group ${isMyTurn ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-transparent animate-soft-float z-10' : 'opacity-90'}`}
+                    className={`w-[110px] h-[160px] rounded-2xl border-4 border-zinc-900 bg-zinc-900 shadow-[8px_8px_0px_#18181b] flex items-center justify-center cursor-pointer relative overflow-hidden group ${isMyTurn ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-transparent animate-soft-float z-10' : 'opacity-90'}`}
                 >
-                    {/* Subtle pattern for the deck back */}
-                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff), repeating-linear-gradient(45deg, #fff 25%, #000 25%, #000 75%, #fff 75%, #fff)', backgroundPosition: '0 0, 10px 10px', backgroundSize: '20px 20px' }} />
-                    <span className="text-3xl opacity-90 font-black tracking-widest -rotate-45 text-white group-hover:scale-110 transition-transform drop-shadow-[2px_2px_0px_#000]" style={{ fontFamily: 'Impact' }}>CHAOS</span>
-                    <div className="absolute top-2 right-2 text-xs font-black text-white bg-zinc-900 px-2 py-1 rounded-lg border-2 border-zinc-900 shadow-sm">{state.deck.length}</div>
+                    <img src="/card-back.jpg" alt="Deck" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <span className="text-3xl opacity-20 font-black tracking-widest -rotate-45 text-white drop-shadow-[2px_2px_0px_#000] relative z-0" style={{ fontFamily: 'Impact' }}>CHAOS</span>
+                    <div className="absolute top-2 right-2 text-xs font-black text-white bg-zinc-900 px-2 py-1 rounded-lg border-2 border-zinc-900 shadow-sm z-10">{state.deck.length}</div>
                 </motion.div>
 
                 {/* Discard Pile */}

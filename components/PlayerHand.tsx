@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlayerHandProps {
     cards: CardType[];
-    onPlayCard: (cardId: string) => void;
+    onPlayCard: (cardIds: string[]) => void;
     isMyTurn: boolean;
     disabled?: boolean;
     playableCardIds?: string[];
@@ -15,6 +15,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
     const containerRef = useRef<HTMLDivElement>(null);
     const [showInventory, setShowInventory] = useState(false);
     const [windowWidth, setWindowWidth] = useState(1024);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     useEffect(() => {
         setWindowWidth(window.innerWidth);
@@ -66,6 +67,42 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
         };
     };
 
+    const handleCardClick = (card: CardType) => {
+        if (disabled || !isMyTurn) return;
+
+        if (selectedIds.includes(card.id)) {
+            // Deselect
+            setSelectedIds(prev => prev.filter(id => id !== card.id));
+        } else {
+            // Select new
+            if (selectedIds.length > 0) {
+                const firstSelected = cards.find(c => c.id === selectedIds[0]);
+                if (firstSelected &&
+                    ((card.type === 'number' && firstSelected.type === 'number' && card.value === firstSelected.value) ||
+                        (card.type !== 'number' && card.type === firstSelected.type))) {
+                    setSelectedIds(prev => [...prev, card.id]);
+                }
+            } else {
+                if (playableCardIds?.includes(card.id)) {
+                    setSelectedIds([card.id]);
+                }
+            }
+        }
+    };
+
+    const handlePlaySelected = () => {
+        if (selectedIds.length > 0) {
+            onPlayCard(selectedIds);
+            setSelectedIds([]);
+            setShowInventory(false);
+        }
+    };
+
+    // Auto-clear selection if it's no longer our turn
+    useEffect(() => {
+        if (!isMyTurn) setSelectedIds([]);
+    }, [isMyTurn]);
+
     return (
         <>
             <div
@@ -91,6 +128,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                         {visibleCards.map((card, index) => {
                             const style = getCardStyle(index, visibleCards.length);
                             const isPlayable = playableCardIds ? playableCardIds.includes(card.id) : true;
+                            const isSelected = selectedIds.includes(card.id);
 
                             return (
                                 <motion.div
@@ -106,12 +144,12 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                                     }}
                                     className="hover:z-50"
                                 >
-                                    <motion.div style={{ rotateZ: style.rotateZ }} className="transition-transform duration-300">
+                                    <motion.div style={{ rotateZ: style.rotateZ, y: isSelected ? -30 : 0 }} className="transition-transform duration-300">
                                         <Card
                                             card={card}
-                                            onClick={() => !disabled && isMyTurn && isPlayable && onPlayCard(card.id)}
+                                            onClick={() => handleCardClick(card)}
                                             disabled={disabled || !isMyTurn || !isPlayable}
-                                            className={`shadow-xl ${isMyTurn && isPlayable ? 'ring-2 ring-white/50 ring-offset-2 ring-offset-zinc-950 scale-105' : ''}`}
+                                            className={`shadow-xl ${isSelected ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-zinc-950 scale-110' : (isMyTurn && isPlayable && selectedIds.length === 0 ? 'ring-2 ring-white/50 ring-offset-2 ring-offset-zinc-950 scale-105 hover:z-50' : '')}`}
                                         />
                                     </motion.div>
                                 </motion.div>
@@ -119,6 +157,25 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                         })}
                     </AnimatePresence>
                 </div>
+
+                <AnimatePresence>
+                    {selectedIds.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="absolute bottom-6 z-[100] flex items-center justify-center pointer-events-auto"
+                        >
+                            <button
+                                onClick={handlePlaySelected}
+                                className="bg-yellow-400 text-zinc-900 border-4 border-zinc-900 border-b-[8px] px-8 py-3 rounded-2xl font-black text-xl tracking-widest uppercase hover:translate-y-1 hover:border-b-4 transition-all"
+                                style={{ fontFamily: 'Impact' }}
+                            >
+                                PLAY {selectedIds.length > 1 ? `${selectedIds.length} COMBO` : 'CARD'}
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Full Inventory Modal for Mass Draws */}
@@ -144,6 +201,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                             <div className="flex flex-wrap gap-4 justify-center">
                                 {sortedCards.map((card) => {
                                     const isPlayable = playableCardIds ? playableCardIds.includes(card.id) : true;
+                                    const isSelected = selectedIds.includes(card.id);
                                     return (
                                         <motion.div
                                             key={card.id}
@@ -153,20 +211,27 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                                         >
                                             <Card
                                                 card={card}
-                                                onClick={() => {
-                                                    if (!disabled && isMyTurn && isPlayable) {
-                                                        setShowInventory(false);
-                                                        onPlayCard(card.id);
-                                                    }
-                                                }}
+                                                onClick={() => handleCardClick(card)}
                                                 disabled={disabled || !isMyTurn || !isPlayable}
-                                                className={`shadow-lg border ${isMyTurn && isPlayable ? 'ring-2 ring-white/50 ring-offset-2 ring-offset-zinc-950 scale-105 cursor-pointer hover:-translate-y-2 relative z-10' : ''}`}
+                                                className={`shadow-lg border ${isSelected ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-zinc-950 scale-110 relative z-20' : (isMyTurn && isPlayable && selectedIds.length === 0 ? 'ring-2 ring-white/50 ring-offset-2 ring-offset-zinc-950 scale-105 cursor-pointer hover:-translate-y-2 relative z-10' : '')}`}
                                             />
                                         </motion.div>
                                     )
                                 })}
                             </div>
                         </div>
+
+                        {selectedIds.length > 0 && (
+                            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[110]">
+                                <button
+                                    onClick={handlePlaySelected}
+                                    className="bg-yellow-400 text-zinc-900 border-4 border-zinc-900 border-b-[8px] px-12 py-4 rounded-2xl font-black text-2xl tracking-widest uppercase hover:translate-y-1 hover:border-b-4 transition-all shadow-2xl"
+                                    style={{ fontFamily: 'Impact' }}
+                                >
+                                    PLAY {selectedIds.length > 1 ? `${selectedIds.length} COMBO` : 'CARD'}
+                                </button>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
