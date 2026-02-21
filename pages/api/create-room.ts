@@ -12,10 +12,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(503).json({ error: 'Server is full, maximum rooms reached.' });
     }
 
-    const { playerName } = req.body;
+    const { playerName, turnTimeLimit } = req.body;
     if (!playerName) {
         return res.status(400).json({ error: 'playerName is required' });
     }
+
+    // Default to 20 seconds if not provided
+    const timerLimit = typeof turnTimeLimit === 'number' ? turnTimeLimit : 20;
 
     // Generate a 6-char room code
     const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -48,6 +51,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         globalCooldown: 0,
         turnCount: 0,
         turnStartTime: Date.now(),
+        settings: {
+            turnTimeLimit: timerLimit
+        },
         winnerId: null,
     };
 

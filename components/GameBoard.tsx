@@ -1,8 +1,9 @@
 import React from 'react';
 import { GameState, Card as CardType } from '../lib/types';
 import { Card } from './Card';
-import { motion } from 'framer-motion';
-import { Cpu, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Cpu, User, Settings2, Volume2, VolumeX } from 'lucide-react';
+import { playSound, setMasterVolume, getMasterVolume } from '../lib/audio/SoundManager';
 
 interface GameBoardProps {
     state: GameState;
@@ -24,6 +25,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
         const interval = setInterval(() => setNow(Date.now()), 1000);
         return () => clearInterval(interval);
     }, []);
+
+    const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+    const [volume, setVolume] = React.useState(() => getMasterVolume());
+
+    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseFloat(e.target.value);
+        setVolume(val);
+        setMasterVolume(val);
+        if (val > 0) playSound('click');
+    };
 
     const timeRemaining = Math.max(0, 20 - Math.floor((now - state.turnStartTime) / 1000));
 
@@ -134,6 +145,51 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                     </motion.div>
                 </div>
             )}
+
+            {/* Settings Button */}
+            <button
+                onClick={() => { playSound('click'); setIsSettingsOpen(true); }}
+                onMouseEnter={() => playSound('hover')}
+                className="absolute top-4 right-4 bg-white border-4 border-zinc-900 p-2 rounded-xl shadow-[4px_4px_0px_#18181b] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#18181b] transition-all z-40 text-zinc-900"
+            >
+                <Settings2 size={24} />
+            </button>
+
+            {/* Settings Modal */}
+            <AnimatePresence>
+                {isSettingsOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6"
+                    >
+                        <div className="bg-white border-4 border-zinc-900 p-8 rounded-3xl max-w-sm w-full flex flex-col items-center gap-6 shadow-[8px_8px_0px_#18181b] relative">
+                            <button
+                                onClick={() => { playSound('click'); setIsSettingsOpen(false); }}
+                                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 font-black text-2xl transition-colors"
+                            >×</button>
+                            <h3 className="text-3xl font-black uppercase tracking-widest text-center text-zinc-900" style={{ fontFamily: 'Impact' }}>SETTINGS</h3>
+
+                            <div className="w-full flex flex-col gap-4">
+                                <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
+                                    <div className="flex items-center justify-between">
+                                        <span>Master Volume</span>
+                                        {volume > 0 ? <Volume2 size={20} /> : <VolumeX size={20} className="text-red-500" />}
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0" max="1" step="0.01"
+                                        value={volume}
+                                        onChange={handleVolumeChange}
+                                        className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
         </div>
     );

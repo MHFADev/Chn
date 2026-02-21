@@ -2,15 +2,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { playSound } from '../lib/audio/SoundManager';
 
 export default function Home() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  const [timeLimit, setTimeLimit] = useState(20);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
+    playSound('click');
     if (!name.trim()) return setError('Please enter your name');
     setLoading(true);
     setError('');
@@ -18,7 +21,7 @@ export default function Home() {
       const res = await fetch('/api/create-room', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerName: name }),
+        body: JSON.stringify({ playerName: name, turnTimeLimit: timeLimit }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -36,6 +39,7 @@ export default function Home() {
   };
 
   const handleJoin = async () => {
+    playSound('click');
     if (!name.trim()) return setError('Please enter your name');
     if (!roomCode.trim()) return setError('Please enter room code');
     setLoading(true);
@@ -82,15 +86,27 @@ export default function Home() {
           {error && <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-xs font-semibold text-center">{error}</div>}
 
           <div className="space-y-1">
-            <label className="text-[12px] text-zinc-900 uppercase font-black tracking-wider ml-1">Identity</label>
-            <input
-              type="text"
-              placeholder="PLAYER NAME"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-blue-50 border-4 border-zinc-900 rounded-xl px-4 py-3 outline-none focus:bg-white focus:-translate-y-1 focus:shadow-[4px_4px_0px_#18181b] transition-all uppercase tracking-widest font-black text-sm text-zinc-900"
-              maxLength={12}
-            />
+            <label className="text-[12px] text-zinc-900 uppercase font-black tracking-wider ml-1">Identity & Rules</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="PLAYER NAME"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="flex-1 bg-blue-50 border-4 border-zinc-900 rounded-xl px-4 py-3 outline-none focus:bg-white focus:-translate-y-1 focus:shadow-[4px_4px_0px_#18181b] transition-all uppercase tracking-widest font-black text-sm text-zinc-900"
+                maxLength={12}
+              />
+              <select
+                value={timeLimit}
+                onChange={(e) => { playSound('hover'); setTimeLimit(Number(e.target.value)); }}
+                className="bg-blue-50 border-4 border-zinc-900 rounded-xl px-2 py-3 outline-none focus:bg-white focus:-translate-y-1 focus:shadow-[4px_4px_0px_#18181b] transition-all uppercase tracking-widest font-black text-sm text-zinc-900 cursor-pointer w-24 text-center"
+              >
+                <option value={10}>10s</option>
+                <option value={20}>20s</option>
+                <option value={30}>30s</option>
+                <option value={60}>60s</option>
+              </select>
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -109,6 +125,7 @@ export default function Home() {
             <button
               onClick={handleCreate}
               disabled={loading}
+              onMouseEnter={() => playSound('hover')}
               className="w-full bg-red-500 text-white border-4 border-zinc-900 font-black uppercase text-sm tracking-widest py-3.5 rounded-xl hover:-translate-y-1 hover:shadow-[4px_4px_0px_#18181b] transition-all active:scale-95 disabled:opacity-50"
             >
               CREATE NEW ROOM
@@ -116,6 +133,7 @@ export default function Home() {
             <button
               onClick={handleJoin}
               disabled={loading}
+              onMouseEnter={() => playSound('hover')}
               className="w-full bg-white border-4 border-zinc-900 text-zinc-900 font-black uppercase text-sm tracking-widest py-3.5 rounded-xl hover:-translate-y-1 hover:shadow-[4px_4px_0px_#18181b] transition-all active:scale-95 disabled:opacity-50"
             >
               JOIN EXISTING
