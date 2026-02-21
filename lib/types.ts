@@ -42,6 +42,8 @@ export interface RoomSettings {
     enableAbnormalDraws?: boolean;
     enableChaosCards?: boolean;
     allowedColors?: CardColor[];
+    allowedNormalDraws?: ('+2' | '+4' | '+6')[];
+    allowedAbnormalDraws?: ('+20' | '+60' | '+100' | '+200')[];
 }
 
 export interface GameState {

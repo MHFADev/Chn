@@ -47,6 +47,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         if (typeof next.enableAbnormalDraws === 'boolean') state.settings.enableAbnormalDraws = next.enableAbnormalDraws;
         if (typeof next.enableChaosCards === 'boolean') state.settings.enableChaosCards = next.enableChaosCards;
         if (Array.isArray(next.allowedColors)) state.settings.allowedColors = next.allowedColors;
+        if (Array.isArray(next.allowedNormalDraws)) state.settings.allowedNormalDraws = next.allowedNormalDraws;
+        if (Array.isArray(next.allowedAbnormalDraws)) state.settings.allowedAbnormalDraws = next.allowedAbnormalDraws;
         state.deck = createBaseDeck(state.settings);
         state.lastAction = 'Room settings updated';
         return res.status(200).json(state);

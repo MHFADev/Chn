@@ -44,8 +44,12 @@ export function createBaseDeck(settings?: RoomSettings): Card[] {
     }
 
     if (enableNormalDraws) {
+        const normalTypes: ('+2' | '+4' | '+6')[] = ['+2', '+4', '+6'];
+        const allowedNormal = settings?.allowedNormalDraws && settings.allowedNormalDraws.length > 0
+            ? settings.allowedNormalDraws
+            : normalTypes;
         allowedColors.forEach(color => {
-            ['+2', '+4', '+6'].forEach(type => {
+            allowedNormal.forEach(type => {
                 for (let i = 0; i < 3; i++) {
                     deck.push({ id: crypto.randomUUID(), color, type: type as CardType, secondaryAction: getSecondary() });
                 }
@@ -54,10 +58,17 @@ export function createBaseDeck(settings?: RoomSettings): Card[] {
     }
 
     if (enableAbnormalDraws) {
-        for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+20', secondaryAction: getSecondary() }); }
-        for (let i = 0; i < 4; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+60', secondaryAction: getSecondary() }); }
-        for (let i = 0; i < 2; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+100', secondaryAction: getSecondary() }); }
-        for (let i = 0; i < 2; i++) { deck.push({ id: crypto.randomUUID(), color: 'wild', type: '+200', secondaryAction: getSecondary() }); }
+        const abnormalTypes: ('+20' | '+60' | '+100' | '+200')[] = ['+20', '+60', '+100', '+200'];
+        const allowedAbnormal = settings?.allowedAbnormalDraws && settings.allowedAbnormalDraws.length > 0
+            ? settings.allowedAbnormalDraws
+            : abnormalTypes;
+        const counts: Record<string, number> = { '+20': 4, '+60': 4, '+100': 2, '+200': 2 };
+        for (const t of allowedAbnormal) {
+            const n = counts[t] ?? 2;
+            for (let i = 0; i < n; i++) {
+                deck.push({ id: crypto.randomUUID(), color: 'wild', type: t as CardType, secondaryAction: getSecondary() });
+            }
+        }
     }
 
     if (enableChaosCards) {

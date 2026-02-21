@@ -35,6 +35,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
     const [enableAbnormalDraws, setEnableAbnormalDraws] = React.useState<boolean>(state.settings?.enableAbnormalDraws ?? true);
     const [enableChaosCards, setEnableChaosCards] = React.useState<boolean>(state.settings?.enableChaosCards ?? true);
     const [allowedColors, setAllowedColors] = React.useState<string[]>(state.settings?.allowedColors ?? ['red','blue','green','yellow','cyan']);
+    const [allowedNormalDraws, setAllowedNormalDraws] = React.useState<string[]>(state.settings?.allowedNormalDraws ?? ['+2','+4','+6']);
+    const [allowedAbnormalDraws, setAllowedAbnormalDraws] = React.useState<string[]>(state.settings?.allowedAbnormalDraws ?? ['+20','+60','+100','+200']);
 
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = parseFloat(e.target.value);
@@ -65,7 +67,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                     enableNormalDraws,
                     enableAbnormalDraws,
                     enableChaosCards,
-                    allowedColors
+                    allowedColors,
+                    allowedNormalDraws,
+                    allowedAbnormalDraws
                 }
             })
         });
@@ -255,6 +259,32 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                                 Chaos Cards
                                             </label>
                                         </div>
+                                        {enableNormalDraws && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {['+2','+4','+6'].map(t => {
+                                                    const checked = allowedNormalDraws.includes(t);
+                                                    return (
+                                                        <label key={t} className={`px-3 py-1 rounded-lg border-2 border-zinc-900 font-black uppercase text-xs cursor-pointer ${checked ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-900'}`}>
+                                                            <input type="checkbox" className="hidden" checked={checked} onChange={() => setAllowedNormalDraws(prev => checked ? prev.filter(x => x !== t) : [...prev, t])} />
+                                                            {t}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                        {enableAbnormalDraws && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {['+20','+60','+100','+200'].map(t => {
+                                                    const checked = allowedAbnormalDraws.includes(t);
+                                                    return (
+                                                        <label key={t} className={`px-3 py-1 rounded-lg border-2 border-zinc-900 font-black uppercase text-xs cursor-pointer ${checked ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-900'}`}>
+                                                            <input type="checkbox" className="hidden" checked={checked} onChange={() => setAllowedAbnormalDraws(prev => checked ? prev.filter(x => x !== t) : [...prev, t])} />
+                                                            {t}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                         <div className="flex flex-wrap gap-2">
                                             {['red','blue','green','yellow','cyan'].map(c => (
                                                 <button
