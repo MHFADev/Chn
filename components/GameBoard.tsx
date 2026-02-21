@@ -24,20 +24,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
         <div className="flex-1 w-full flex flex-col items-center justify-between p-6 relative z-0">
 
             {/* Opponents Area */}
-            <div className="w-full flex justify-around p-4 h-32 mt-4 glass-panel max-w-5xl mx-auto">
+            <div className="w-full flex justify-around p-4 h-32 mt-4 max-w-5xl mx-auto">
                 {opponents.map((p, i) => {
                     const isTurn = state.players[state.turnIndex]?.id === p.id;
                     return (
-                        <div key={p.id} className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all border ${isTurn ? 'bg-zinc-800 border-zinc-700 shadow-sm scale-105' : 'bg-transparent border-transparent opacity-60'}`}>
+                        <div key={p.id} className={`flex flex-col items-center justify-center p-4 rounded-2xl transition-all border-4 ${isTurn ? 'bg-yellow-400 border-zinc-900 shadow-[6px_6px_0px_#18181b] scale-110 -translate-y-2' : 'bg-white border-zinc-900 shadow-[4px_4px_0px_rgba(0,0,0,0.1)] opacity-90'}`}>
                             <div className="flex items-center gap-2 mb-2">
-                                {p.isAI ? <Cpu size={14} className="text-zinc-500" /> : <User size={14} className="text-zinc-500" />}
-                                <span className="font-bold text-xs tracking-widest uppercase text-zinc-300">{p.name}</span>
+                                {p.isAI ? <Cpu size={16} className="text-zinc-900" /> : <User size={16} className="text-zinc-900" />}
+                                <span className="font-black text-sm tracking-widest uppercase text-zinc-900">{p.name}</span>
                             </div>
-                            <div className="flex gap-2 items-center bg-zinc-950 px-3 py-1 rounded-full border border-zinc-800">
-                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">CARDS</span>
-                                <span className="font-mono text-sm text-zinc-200">{p.hand.length || 0}</span>
+                            <div className="flex gap-2 items-center bg-zinc-900 px-4 py-1.5 rounded-xl border-2 border-zinc-900">
+                                <span className="text-[10px] text-zinc-300 font-bold uppercase tracking-widest">CARDS</span>
+                                <span className="font-black text-base text-white">{p.hand.length || 0}</span>
                             </div>
-                            {isTurn && <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-3">Thinking...</div>}
+                            {isTurn && <div className="text-[10px] text-zinc-800 font-black uppercase tracking-widest mt-3 animate-pulse">Thinking...</div>}
                         </div>
                     )
                 })}
@@ -47,49 +47,50 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
             <div className="flex-1 w-full flex items-center justify-center gap-16 sm:gap-32 relative py-12">
                 {/* Active Stack Penalties */}
                 {state.activeStack && state.activeStack.totalDraw > 0 && (
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 text-center bg-red-500/10 border border-red-500/20 text-red-500 px-6 py-2 rounded-full font-bold text-sm tracking-widest z-20 shadow-sm">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 text-center bg-red-500 border-4 border-zinc-900 text-white px-8 py-3 rounded-2xl font-black text-lg tracking-widest z-20 shadow-[6px_6px_0px_#18181b] animate-bounce">
                         STACK DRAW: +{state.activeStack.totalDraw}
                     </div>
                 )}
 
                 {/* Deck Pile */}
                 <motion.div
-                    whileHover={isMyTurn ? { scale: 1.02, y: -2 } : {}}
-                    whileTap={isMyTurn ? { scale: 0.98 } : {}}
+                    whileHover={isMyTurn ? { scale: 1.05, y: -4, rotateZ: -2 } : {}}
+                    whileTap={isMyTurn ? { scale: 0.95 } : {}}
                     onClick={isMyTurn ? onDraw : undefined}
-                    className={`w-[100px] h-[150px] rounded-xl border border-zinc-700 bg-zinc-900 shadow-md flex items-center justify-center cursor-pointer relative overflow-hidden group ${isMyTurn ? 'ring-2 ring-zinc-500 ring-offset-4 ring-offset-zinc-950 animate-soft-float' : 'opacity-70'}`}
+                    className={`w-[110px] h-[160px] rounded-2xl border-4 border-zinc-900 bg-[#ef4444] shadow-[8px_8px_0px_#18181b] flex items-center justify-center cursor-pointer relative overflow-hidden group ${isMyTurn ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-transparent animate-soft-float z-10' : 'opacity-90'}`}
                 >
                     {/* Subtle pattern for the deck back */}
                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff), repeating-linear-gradient(45deg, #fff 25%, #000 25%, #000 75%, #fff 75%, #fff)', backgroundPosition: '0 0, 10px 10px', backgroundSize: '20px 20px' }} />
-                    <span className="text-xl opacity-60 font-black tracking-widest -rotate-90 text-zinc-300 group-hover:opacity-100 transition-opacity drop-shadow-md">CHAOS</span>
-                    <div className="absolute bottom-2 right-2 text-[10px] font-mono text-zinc-400 bg-zinc-950/80 px-1.5 py-0.5 rounded border border-zinc-800">{state.deck.length}</div>
+                    <span className="text-3xl opacity-90 font-black tracking-widest -rotate-45 text-white group-hover:scale-110 transition-transform drop-shadow-[2px_2px_0px_#000]" style={{ fontFamily: 'Impact' }}>CHAOS</span>
+                    <div className="absolute top-2 right-2 text-xs font-black text-white bg-zinc-900 px-2 py-1 rounded-lg border-2 border-zinc-900 shadow-sm">{state.deck.length}</div>
                 </motion.div>
 
                 {/* Discard Pile */}
-                <div className="relative w-[100px] h-[150px]">
+                <div className="relative w-[110px] h-[160px]">
                     {topDiscard ? (
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1, rotate: Math.random() * 6 - 3 }}
+                            animate={{ scale: 1, opacity: 1, rotate: Math.random() * 8 - 4 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                             className="absolute inset-0 z-10"
                         >
-                            <Card disabled={true} className="w-full h-full shadow-lg" card={topDiscard} />
+                            <Card disabled={false} className="w-full h-full shadow-[6px_6px_0px_#18181b] cursor-default" card={topDiscard} />
                         </motion.div>
                     ) : (
-                        <div className="w-full h-full rounded-xl border border-dashed border-zinc-700 flex flex-col items-center justify-center opacity-50 text-[10px] font-bold uppercase tracking-widest text-center px-4 text-zinc-500">
+                        <div className="w-full h-full rounded-2xl border-4 border-dashed border-zinc-900 bg-white/50 flex flex-col items-center justify-center text-[10px] font-black uppercase tracking-widest text-center px-4 text-zinc-900 shadow-[inset_4px_4px_0px_rgba(0,0,0,0.1)]">
                             <div>DISCARD</div><div>PILE</div>
                         </div>
                     )}
 
                     {/* Locked Color Indicator */}
                     {state.lockedColor && (
-                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border bg-zinc-900 text-zinc-300 border-zinc-700 flex items-center gap-2 shadow-md whitespace-nowrap z-20">
-                            <div className={`w-2 h-2 rounded-full 
+                        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest border-4 bg-white text-zinc-900 border-zinc-900 flex items-center gap-3 shadow-[4px_4px_0px_#18181b] whitespace-nowrap z-20">
+                            <div className={`w-4 h-4 rounded-full border-2 border-zinc-900 shadow-sm
                   ${state.lockedColor === 'red' ? 'bg-red-500' : ''}
                   ${state.lockedColor === 'blue' ? 'bg-blue-500' : ''}
                   ${state.lockedColor === 'green' ? 'bg-green-500' : ''}
                   ${state.lockedColor === 'yellow' ? 'bg-yellow-500' : ''}
+                  ${state.lockedColor === 'cyan' ? 'bg-cyan-500' : ''}
                 `} />
                             {state.lockedColor}
                         </div>
@@ -98,15 +99,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
             </div>
 
             {/* Info / Turn Timer Tracker */}
-            <div className="absolute bottom-40 right-8 flex flex-col gap-3 items-end z-10 pointer-events-none">
-                <div className="px-4 py-2 glass-panel text-xs font-mono flex items-center tracking-widest text-zinc-400 shadow-sm">
-                    <span className={`${timeRemaining < 6 ? 'text-red-500 font-bold' : ''}`}>TIMER: {timeRemaining}s</span>
+            <div className="absolute bottom-48 sm:bottom-40 right-4 sm:right-8 flex flex-col gap-3 items-end z-10 pointer-events-none">
+                <div className="px-5 py-2 bg-white border-4 border-zinc-900 rounded-xl text-sm font-black flex items-center tracking-widest text-zinc-900 shadow-[4px_4px_0px_#18181b]">
+                    <span className={`${timeRemaining < 6 ? 'text-red-500' : ''}`}>TIMER: {timeRemaining}s</span>
                 </div>
-                <div className="px-4 py-1.5 bg-zinc-900/80 rounded-lg border border-zinc-700/80 text-[10px] font-bold tracking-widest text-zinc-400 uppercase shadow-sm">
+                <div className="px-5 py-2 bg-blue-100 rounded-xl border-4 border-zinc-900 text-xs font-black tracking-widest text-blue-900 uppercase shadow-[4px_4px_0px_#18181b]">
                     Turn {state.turnCount}
                 </div>
                 {state.globalCooldown > 0 && (
-                    <div className="px-4 py-1.5 bg-red-500/10 rounded-lg border border-red-500/20 text-red-500 text-[10px] font-bold tracking-widest uppercase">
+                    <div className="px-5 py-2 bg-red-100 rounded-xl border-4 border-red-500 text-red-600 font-black tracking-widest uppercase shadow-[4px_4px_0px_#ef4444]">
                         Cooldown: {state.globalCooldown}
                     </div>
                 )}
@@ -114,13 +115,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
 
             {/* Action Logs */}
             {state.lastAction && (
-                <div className="absolute top-[40%] w-full flex justify-center pointer-events-none z-30">
+                <div className="absolute top-[35%] w-full flex justify-center pointer-events-none z-30">
                     <motion.div
                         key={state.turnCount}
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="px-6 py-2.5 bg-zinc-800 text-zinc-200 text-xs font-bold tracking-wider border border-zinc-700 shadow-xl rounded-full"
+                        initial={{ opacity: 0, scale: 0.5, y: -20, rotateZ: -5 }}
+                        animate={{ opacity: 1, scale: 1, y: 0, rotateZ: 0 }}
+                        exit={{ opacity: 0, scale: 1.5, filter: 'blur(10px)' }}
+                        className="px-8 py-3 bg-white text-zinc-900 text-sm md:text-xl font-black tracking-widest border-4 border-zinc-900 shadow-[8px_8px_0px_rgba(239,68,68,1)] rounded-2xl"
+                        style={{ fontFamily: 'Impact' }}
                     >
                         {state.lastAction}
                     </motion.div>
