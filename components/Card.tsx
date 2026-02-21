@@ -162,7 +162,7 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
             className={cn(
                 "relative w-[110px] h-[160px] rounded-xl flex flex-col justify-between p-2 select-none",
                 "border-[3px] border-zinc-900 shadow-[4px_4px_0px_#18181b]", // ⬅️ Cartoon / Poker aesthetic base
-                disabled ? "brightness-50 grayscale shadow-none translate-y-[4px] translate-x-[4px]" : "cursor-pointer",
+                disabled ? "brightness-[0.4] grayscale-[0.8] opacity-70 shadow-none translate-y-[4px] translate-x-[4px]" : "cursor-pointer",
                 className
             )}
             style={{ backgroundColor: isGlobal ? '#27272a' : iconColor }}

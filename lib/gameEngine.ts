@@ -27,13 +27,21 @@ export class GameEngine {
 
         if (state.lockedColor && cardToPlay.color !== state.lockedColor) return false;
 
-        // Check color or type match
-        if (topCard.color === cardToPlay.color || topCard.type === cardToPlay.type) {
+        // Check explicit color match
+        if (topCard.color === cardToPlay.color) {
             return true;
         }
 
-        // If top card was wild, color might have been changed, handled by lockedColor
-        // If we reach here and colors don't match, invalid
+        // Check value mapping (Numbers MUST have identical values)
+        if (topCard.type === 'number' && cardToPlay.type === 'number') {
+            if (topCard.value === cardToPlay.value) return true;
+        }
+        // Action cards match if they are exact same type (e.g., skip on skip, +2 on +2)
+        else if (topCard.type === cardToPlay.type) {
+            return true;
+        }
+
+        // If we reach here, invalid
         return false;
     }
 
