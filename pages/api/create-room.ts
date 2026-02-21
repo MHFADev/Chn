@@ -66,11 +66,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const fullDeck = createBaseDeck(mergedSettings);
 
-    // For a new room, we just create the state. Deal hands later when game starts, or deal immediately for 1 player (though game usually needs 2).
-    // Let's hold off dealing until game 'status' switches to 'playing'.
-    // Actually, to keep it simple, we can deal when someone hits "Start Game" or just deal initially and add more when players join.
-    // Standard is to deal when "Start" is clicked. So we leave hands empty and deal on start.
-
     const newPlayer = {
         id: crypto.randomUUID(),
         name: playerName,
