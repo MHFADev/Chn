@@ -2,6 +2,7 @@
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GameState } from '../../../lib/types';
+import { GameEngine } from '../../../lib/gameEngine';
 import { GameBoard } from '../../../components/GameBoard';
 import { PlayerHand } from '../../../components/PlayerHand';
 import confetti from 'canvas-confetti';
@@ -149,7 +150,12 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
                                 YOUR TURN
                             </div>
                         )}
-                        {me && <PlayerHand cards={me.hand} onPlayCard={handlePlayCard} isMyTurn={isMyTurn} />}
+                        {me && <PlayerHand
+                            cards={me.hand}
+                            onPlayCard={handlePlayCard}
+                            isMyTurn={isMyTurn}
+                            playableCardIds={isMyTurn ? me.hand.filter(c => GameEngine.isValidPlay(state, c, me)).map(c => c.id) : undefined}
+                        />}
                     </div>
                 </>
             )}

@@ -8,9 +8,10 @@ interface PlayerHandProps {
     onPlayCard: (cardId: string) => void;
     isMyTurn: boolean;
     disabled?: boolean;
+    playableCardIds?: string[];
 }
 
-export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyTurn, disabled }) => {
+export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyTurn, disabled, playableCardIds }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Fanning math parameters
@@ -43,6 +44,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                 <AnimatePresence>
                     {cards.map((card, index) => {
                         const style = getCardStyle(index, cards.length);
+                        const isPlayable = playableCardIds ? playableCardIds.includes(card.id) : true;
 
                         return (
                             <motion.div
@@ -61,9 +63,9 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
                                 <motion.div style={{ rotateZ: style.rotateZ }} className="transition-transform duration-300">
                                     <Card
                                         card={card}
-                                        onClick={() => !disabled && isMyTurn && onPlayCard(card.id)}
-                                        disabled={disabled || !isMyTurn}
-                                        className="shadow-xl"
+                                        onClick={() => !disabled && isMyTurn && isPlayable && onPlayCard(card.id)}
+                                        disabled={disabled || !isMyTurn || !isPlayable}
+                                        className={`shadow-xl ${isMyTurn && isPlayable ? 'ring-2 ring-white/50 ring-offset-2 ring-offset-zinc-950 scale-105' : ''}`}
                                     />
                                 </motion.div>
                             </motion.div>
