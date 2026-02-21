@@ -57,7 +57,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
         // More negative margin = more overlap
         let margin = '-1.5rem';
         if (total > 5) margin = isMobile ? '-3.8rem' : '-2.5rem';
-        if (total > 10) margin = isMobile ? '-4.6rem' : '-3.5rem'; // extreme squeeze for 15 on mobile
+        if (total > 10) margin = isMobile ? '-4.6rem' : '-2.8rem'; // reduced squeeze for desktop 15 cards
 
         return {
             rotateZ: rot,
