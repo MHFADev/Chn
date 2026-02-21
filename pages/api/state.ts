@@ -24,34 +24,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     // Check Turn Timeout if playing
     if (state.status === 'playing') {
         const now = Date.now();
-        if (now - state.turnStartTime > TURN_TIMEOUT_MS) {
-            // Player timed out
-            const currentPlayer = state.players[state.turnIndex];
-
-            // Mark as disconnected after 1 timeout for simplicity, or just force AI move
-            currentPlayer.connected = false;
-
-            // Force AI takeover or auto-draw
-            const move = AIEngine.getBestMove(state, currentPlayer);
-            if (move) {
-                // Play logic similar to action.ts
-                // Remove card from hand
-                currentPlayer.hand = currentPlayer.hand.filter(c => c.id !== move.id);
-                state.discardPile.push(move);
-                GameEngine.applyCardEffect(state, move, currentPlayer);
-                state.turnStartTime = Date.now();
-                state.turnCount++;
-                state.lastAction = `${currentPlayer.name} (AI) played ${move.color} ${move.type}`;
-            } else {
-                // Auto draw
-                const drawn = drawCard(state);
-                currentPlayer.hand.push(drawn);
-                state.turnIndex = GameEngine.getNextTurnIndex(state);
-                state.turnStartTime = Date.now();
-                state.turnCount++;
-                state.lastAction = `${currentPlayer.name} (AI) drew a card due to timeout`;
-            }
-        }
+        // --- AI AUTO-PLAY DISABLED ---
+        // if (now - state.turnStartTime > TURN_TIMEOUT_MS) {
+        // ... AI logic removed based on user feedback to prevent auto-play in multiplayer.
+        // }
     }
 
     // Return the state. In a real app, you might want to strip other players' hands to prevent cheating on client side.

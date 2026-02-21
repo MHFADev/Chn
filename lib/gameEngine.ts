@@ -32,12 +32,13 @@ export class GameEngine {
             return true;
         }
 
-        // Check value mapping (Numbers MUST have identical values)
-        if (topCard.type === 'number' && cardToPlay.type === 'number') {
-            if (topCard.value === cardToPlay.value) return true;
+        // 3B. Number Value Match (same number, different color)
+        if (topCard.type === 'number' && cardToPlay.type === 'number' && topCard.value === cardToPlay.value) {
+            return true;
         }
-        // Action cards match if they are exact same type (e.g., skip on skip, +2 on +2)
-        else if (topCard.type === cardToPlay.type) {
+
+        // 3C. Action Card Match (same type, e.g., Skip on Skip, Reverse on Reverse, even if different colors)
+        if (topCard.type !== 'number' && topCard.type === cardToPlay.type) {
             return true;
         }
 
