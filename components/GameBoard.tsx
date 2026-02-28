@@ -217,14 +217,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6"
                     >
-                        <div className="bg-white border-4 border-zinc-900 p-8 rounded-3xl max-w-sm w-full flex flex-col items-center gap-6 shadow-[8px_8px_0px_#18181b] relative">
+                        <div className="bg-white border-4 border-zinc-900 p-6 sm:p-8 rounded-3xl max-w-lg w-full flex flex-col items-center gap-6 shadow-[8px_8px_0px_#18181b] relative">
                             <button
                                 onClick={() => { playSound('click'); setIsSettingsOpen(false); }}
                                 className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 font-black text-2xl transition-colors"
                             >×</button>
-                            <h3 className="text-3xl font-black uppercase tracking-widest text-center text-zinc-900" style={{ fontFamily: 'Impact' }}>SETTINGS</h3>
+                            <h3 className="text-3xl font-black uppercase tracking-widest text-center text-zinc-900" style={{ fontFamily: 'Impact' }}>ROOM SETTINGS</h3>
 
-                            <div className="w-full flex flex-col gap-4">
+                            <div className="w-full flex flex-col gap-6">
                                 <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
                                     <div className="flex items-center justify-between">
                                         <span>Master Volume</span>
@@ -253,24 +253,26 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                                 className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
                                             />
                                         </label>
-                                        <label className="flex items-center justify-between font-black uppercase tracking-widest text-zinc-900">
-                                            <span>Background Chill</span>
-                                            <input type="checkbox" checked={bgOn} onChange={handleBgToggle} />
-                                        </label>
-                                        <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
-                                            <div className="flex items-center justify-between">
-                                                <span>Background Volume</span>
-                                                <span>{Math.round(bgVolume * 100)}%</span>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                min="0" max="0.4" step="0.01"
-                                                value={bgVolume}
-                                                onChange={handleBgVolumeChange}
-                                                className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
-                                            />
-                                        </label>
-                                        <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <label className="flex items-center justify-between font-black uppercase tracking-widest text-zinc-900 border-2 border-zinc-900 rounded-xl px-4 py-2 bg-yellow-50">
+                                                <span>Background Chill</span>
+                                                <input type="checkbox" checked={bgOn} onChange={handleBgToggle} />
+                                            </label>
+                                            <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900 border-2 border-zinc-900 rounded-xl px-4 py-2 bg-yellow-50">
+                                                <div className="flex items-center justify-between">
+                                                    <span>Background Volume</span>
+                                                    <span>{Math.round(bgVolume * 100)}%</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0" max="0.4" step="0.01"
+                                                    value={bgVolume}
+                                                    onChange={handleBgVolumeChange}
+                                                    className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
+                                                />
+                                            </label>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 border-2 border-zinc-900 rounded-xl p-4 bg-white">
                                             <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
                                                 <input type="checkbox" checked={enableNumbers} onChange={e => setEnableNumbers(e.target.checked)} />
                                                 Numbers
@@ -293,7 +295,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                             </label>
                                         </div>
                                         {enableNormalDraws && (
-                                            <div className="flex flex-wrap gap-2">
+                                            <div className="flex flex-wrap gap-2 border-2 border-zinc-900 rounded-xl p-3 bg-white">
                                                 {['+2','+4','+6'].map(t => {
                                                     const checked = allowedNormalDraws.includes(t);
                                                     return (
@@ -306,7 +308,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                             </div>
                                         )}
                                         {enableAbnormalDraws && (
-                                            <div className="flex flex-wrap gap-2">
+                                            <div className="flex flex-wrap gap-2 border-2 border-zinc-900 rounded-xl p-3 bg-white">
                                                 {['+20','+60','+100','+200','+300'].map(t => {
                                                     const checked = allowedAbnormalDraws.includes(t);
                                                     return (
@@ -318,7 +320,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                                 })}
                                             </div>
                                         )}
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-2 border-2 border-zinc-900 rounded-xl p-3 bg-white">
                                             {['red','blue','green','yellow','cyan'].map(c => (
                                                 <button
                                                     key={c}
