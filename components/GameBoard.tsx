@@ -95,7 +95,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
         <div className="flex-1 w-full flex flex-col items-center justify-between p-6 relative z-0">
 
             {/* Opponents Area */}
-            <div className="w-full flex justify-around p-4 h-32 mt-4 max-w-5xl mx-auto">
+            <div className="w-full flex justify-around p-2 sm:p-4 h-24 sm:h-32 mt-2 sm:mt-4 max-w-5xl mx-auto overflow-x-auto gap-2">
                 {opponents.map((p, i) => {
                     const isTurn = state.players[state.turnIndex]?.id === p.id;
                     return (
@@ -115,7 +115,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
             </div>
 
             {/* Center Area */}
-            <div className="flex-1 w-full flex items-center justify-center gap-16 sm:gap-32 relative py-12">
+            <div className="flex-1 w-full flex items-center justify-center gap-8 sm:gap-16 relative py-6 sm:py-12">
                 {/* Active Stack Penalties */}
                 {state.activeStack && state.activeStack.totalDraw > 0 && (
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 text-center bg-red-500 border-4 border-zinc-900 text-white px-8 py-3 rounded-2xl font-black text-lg tracking-widest z-20 shadow-[6px_6px_0px_#18181b] animate-bounce">
@@ -128,7 +128,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                     whileHover={isMyTurn ? { scale: 1.05, y: -4, rotateZ: -2 } : {}}
                     whileTap={isMyTurn ? { scale: 0.95 } : {}}
                     onClick={isMyTurn ? onDraw : undefined}
-                    className={`w-[110px] h-[160px] rounded-2xl border-4 border-zinc-900 bg-zinc-900 shadow-[8px_8px_0px_#18181b] flex items-center justify-center cursor-pointer relative overflow-hidden group ${isMyTurn ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-transparent animate-soft-float z-10' : 'opacity-90'}`}
+                    className={`w-[80px] h-[118px] sm:w-[110px] sm:h-[160px] rounded-2xl border-4 border-zinc-900 bg-zinc-900 shadow-[8px_8px_0px_#18181b] flex items-center justify-center cursor-pointer relative overflow-hidden group ${isMyTurn ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-transparent animate-soft-float z-10' : 'opacity-90'}`}
                 >
                     <img src="/card-back.jpg" alt="Deck" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                     <span className="text-3xl opacity-20 font-black tracking-widest -rotate-45 text-white drop-shadow-[2px_2px_0px_#000] relative z-0" style={{ fontFamily: 'Impact' }}>CHAOS</span>
@@ -136,7 +136,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                 </motion.div>
 
                 {/* Discard Pile */}
-                <div className="relative w-[110px] h-[160px]">
+                <div className="relative w-[80px] h-[118px] sm:w-[110px] sm:h-[160px]">
                     {topDiscard ? (
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -169,7 +169,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
             </div>
 
             {/* Info / Turn Timer Tracker */}
-            <div className="absolute bottom-48 sm:bottom-40 right-4 sm:right-8 flex flex-col gap-3 items-end z-10 pointer-events-none">
+            <div className="absolute bottom-32 sm:bottom-40 right-2 sm:right-8 flex flex-col gap-2 sm:gap-3 items-end z-10 pointer-events-none">
                 <div className="px-5 py-2 bg-white border-4 border-zinc-900 rounded-xl text-sm font-black flex items-center tracking-widest text-zinc-900 shadow-[4px_4px_0px_#18181b]">
                     <span className={`${timeRemaining < 6 ? 'text-red-500' : ''}`}>TIMER: {timeRemaining}s</span>
                 </div>

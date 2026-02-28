@@ -160,7 +160,7 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
             whileTap={!disabled ? { scale: 0.95 } : {}}
             onClick={!disabled ? onClick : undefined}
             className={cn(
-                "relative w-[110px] h-[160px] rounded-xl flex flex-col justify-between p-2 select-none",
+                "relative w-[80px] h-[118px] sm:w-[110px] sm:h-[160px] rounded-xl flex flex-col justify-between p-2 select-none",
                 "border-[3px] border-zinc-900 shadow-[4px_4px_0px_#18181b]", // ⬅️ Cartoon / Poker aesthetic base
                 disabled ? "brightness-[0.4] grayscale-[0.8] opacity-70 shadow-none translate-y-[4px] translate-x-[4px]" : "cursor-pointer",
                 className
@@ -172,9 +172,9 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
 
             {/* Top Left Index */}
             <div className="flex flex-col items-center w-fit z-10 text-white pointer-events-none">
-                <span className="text-2xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1.5px #18181b' }}>{displayValue}</span>
+                <span className="text-xl sm:text-2xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1.5px #18181b' }}>{displayValue}</span>
                 {card.color !== 'wild' && (
-                    <svg width="14" height="14" viewBox="0 0 100 100" className="mt-0.5">
+                    <svg width="10" height="10" viewBox="0 0 100 100" className="mt-0.5 sm:w-[14px] sm:h-[14px]">
                         {getCornerSymbol()}
                     </svg>
                 )}
@@ -182,16 +182,16 @@ export const Card: React.FC<CardProps> = ({ card, onClick, className, disabled }
 
             {/* Center SVG Graphic */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                <svg width="75" height="75" viewBox="0 0 100 100" className="drop-shadow-md">
+                <svg width="60" height="60" viewBox="0 0 100 100" className="drop-shadow-md sm:w-[75px] sm:h-[75px]">
                     {getCenterSVG()}
                 </svg>
             </div>
 
             {/* Bottom Right Index (Rotated) */}
             <div className="flex flex-col items-center w-fit self-end rotate-180 z-10 text-white pointer-events-none">
-                <span className="text-2xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1.5px #18181b' }}>{displayValue}</span>
+                <span className="text-xl sm:text-2xl font-black leading-none" style={{ fontFamily: 'Impact, sans-serif', WebkitTextStroke: '1.5px #18181b' }}>{displayValue}</span>
                 {card.color !== 'wild' && (
-                    <svg width="14" height="14" viewBox="0 0 100 100" className="mt-0.5">
+                    <svg width="10" height="10" viewBox="0 0 100 100" className="mt-0.5 sm:w-[14px] sm:h-[14px]">
                         {getCornerSymbol()}
                     </svg>
                 )}
