@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { playSound } from '../lib/audio/SoundManager';
+import { playSound, startBackgroundChill, stopBackgroundChill, getBackgroundVolume, setBackgroundVolume } from '../lib/audio/SoundManager';
 
 export default function Home() {
   const router = useRouter();
@@ -21,6 +21,13 @@ export default function Home() {
   const [allowedNormalDraws, setAllowedNormalDraws] = useState<string[]>(['+2','+4','+6']);
   const [allowedAbnormalDraws, setAllowedAbnormalDraws] = useState<string[]>(['+20','+60','+100','+200']);
   const toggleColor = (c: string) => setAllowedColors(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+  const [bgOn, setBgOn] = useState(false);
+  const [bgVol, setBgVol] = useState(() => getBackgroundVolume());
+  const handleBgToggle = (checked: boolean) => {
+    setBgOn(checked);
+    if (checked) startBackgroundChill();
+    else stopBackgroundChill();
+  };
 
   const handleCreate = async () => {
     playSound('click');
@@ -218,6 +225,23 @@ export default function Home() {
                 Chaos Cards
               </label>
             </div>
+            <label className="flex items-center justify-between font-black uppercase tracking-widest text-zinc-900">
+              <span>Background Chill</span>
+              <input type="checkbox" checked={bgOn} onChange={e => handleBgToggle(e.target.checked)} />
+            </label>
+            <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
+              <div className="flex items-center justify-between">
+                <span>Background Volume</span>
+                <span>{Math.round(bgVol * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min="0" max="0.4" step="0.01"
+                value={bgVol}
+                onChange={e => { const v = parseFloat(e.target.value); setBgVol(v); setBackgroundVolume(v); }}
+                className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
+              />
+            </label>
 
             {enableNormalDraws && (
               <div className="flex flex-wrap gap-2">

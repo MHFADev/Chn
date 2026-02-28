@@ -3,7 +3,7 @@ import { GameState, Card as CardType } from '../lib/types';
 import { Card } from './Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, User, Settings2, Volume2, VolumeX } from 'lucide-react';
-import { playSound, setMasterVolume, getMasterVolume } from '../lib/audio/SoundManager';
+import { playSound, setMasterVolume, getMasterVolume, startBackgroundChill, stopBackgroundChill, getBackgroundVolume, setBackgroundVolume, isBackgroundEnabled } from '../lib/audio/SoundManager';
 
 interface GameBoardProps {
     state: GameState;
@@ -28,6 +28,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
 
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
     const [volume, setVolume] = React.useState(() => getMasterVolume());
+    const [bgOn, setBgOn] = React.useState(() => isBackgroundEnabled());
+    const [bgVolume, setBgVol] = React.useState(() => getBackgroundVolume());
     const [turnLimit, setTurnLimit] = React.useState<number>(() => state.settings?.turnTimeLimit || 20);
     const [enableNumbers, setEnableNumbers] = React.useState<boolean>(state.settings?.enableNumbers ?? true);
     const [enableActions, setEnableActions] = React.useState<boolean>(state.settings?.enableActions ?? true);
@@ -43,6 +45,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
         setVolume(val);
         setMasterVolume(val);
         if (val > 0) playSound('click');
+    };
+    const handleBgVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseFloat(e.target.value);
+        setBgVol(val);
+        setBackgroundVolume(val);
+    };
+    const handleBgToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked;
+        setBgOn(checked);
+        if (checked) {
+            startBackgroundChill();
+        } else {
+            stopBackgroundChill();
+        }
     };
 
     const timeRemaining = Math.max(0, (state.settings?.turnTimeLimit || 20) - Math.floor((now - state.turnStartTime) / 1000));
@@ -234,6 +250,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                                 min={5} max={120} step={5}
                                                 value={turnLimit}
                                                 onChange={e => setTurnLimit(parseInt(e.target.value))}
+                                                className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
+                                            />
+                                        </label>
+                                        <label className="flex items-center justify-between font-black uppercase tracking-widest text-zinc-900">
+                                            <span>Background Chill</span>
+                                            <input type="checkbox" checked={bgOn} onChange={handleBgToggle} />
+                                        </label>
+                                        <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
+                                            <div className="flex items-center justify-between">
+                                                <span>Background Volume</span>
+                                                <span>{Math.round(bgVolume * 100)}%</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0" max="0.4" step="0.01"
+                                                value={bgVolume}
+                                                onChange={handleBgVolumeChange}
                                                 className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
                                             />
                                         </label>
