@@ -31,6 +31,7 @@ export default function Home() {
 
   const handleCreate = async () => {
     playSound('click');
+    if (!bgOn) { setBgOn(true); startBackgroundChill(); }
     if (!name.trim()) return setError('Please enter your name');
     setLoading(true);
     setError('');
@@ -71,6 +72,7 @@ export default function Home() {
 
   const handleJoin = async () => {
     playSound('click');
+    if (!bgOn) { setBgOn(true); startBackgroundChill(); }
     if (!name.trim()) return setError('Please enter your name');
     if (!roomCode.trim()) return setError('Please enter room code');
     setLoading(true);

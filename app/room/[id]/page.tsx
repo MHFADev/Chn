@@ -6,7 +6,7 @@ import { GameEngine } from '../../../lib/gameEngine';
 import { GameBoard } from '../../../components/GameBoard';
 import { PlayerHand } from '../../../components/PlayerHand';
 import confetti from 'canvas-confetti';
-import { playSound } from '../../../lib/audio/SoundManager';
+import { playSound, startBackgroundChill } from '../../../lib/audio/SoundManager';
 
 export default function RoomPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -60,6 +60,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
 
     const handleStartGame = async () => {
         playSound('gameStart');
+        startBackgroundChill();
         await fetch('/api/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

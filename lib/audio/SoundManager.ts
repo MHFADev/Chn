@@ -1,4 +1,5 @@
 import { zzfxP } from './zzfx';
+import { Howl } from 'howler';
 
 // 30 Pre-configured ZZFX Sound Profiles for Chaos Global Card Game
 export const Sounds = {
@@ -45,13 +46,10 @@ export const Sounds = {
     timeout: [, 0.4, 160, 0.06, 0.22, 0.45, 0, 1, -4, 0, 0, 0, 0, 1.5, 0, 0, 0, 1, 0, 0, 0],
 };
 
-let masterVolume = 0.25;
-let bgContext: AudioContext | null = null;
-let bgGain: GainNode | null = null;
-let bgOscillators: OscillatorNode[] = [];
-let bgLfo: OscillatorNode | null = null;
+let masterVolume = 0.15;
 let bgEnabled = false;
-let bgVolume = 0.08;
+let bgVolume = 0.06;
+let bgHowl: Howl | null = null;
 
 export const playSound = (soundName: keyof typeof Sounds) => {
     if (typeof window === 'undefined') return;
@@ -80,59 +78,28 @@ export const getMasterVolume = () => masterVolume;
 export const startBackgroundChill = () => {
     if (typeof window === 'undefined') return;
     if (bgEnabled) return;
-    bgContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    const ctx = bgContext;
-    bgGain = ctx.createGain();
-    bgGain.gain.value = bgVolume;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 800;
-    filter.Q.value = 0.7;
-
-    const freqs = [220, 330, 440];
-    bgOscillators = freqs.map(f => {
-        const osc = ctx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = f;
-        osc.connect(bgGain!);
-        return osc;
-    });
-
-    bgLfo = ctx.createOscillator();
-    bgLfo.type = 'sine';
-    bgLfo.frequency.value = 0.15;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.02;
-    bgLfo.connect(lfoGain);
-    lfoGain.connect(bgGain!.gain);
-
-    bgGain.connect(filter);
-    filter.connect(ctx.destination);
-
-    bgOscillators.forEach(o => o.start());
-    bgLfo.start();
+    if (!bgHowl) {
+        bgHowl = new Howl({
+            src: ['/bg.mp3'],
+            loop: true,
+            volume: bgVolume
+        });
+    }
+    bgHowl.play();
     bgEnabled = true;
 };
 
 export const stopBackgroundChill = () => {
     if (!bgEnabled) return;
-    try {
-        bgOscillators.forEach(o => o.stop());
-        bgOscillators = [];
-        if (bgLfo) { bgLfo.stop(); bgLfo = null; }
-        if (bgContext) { bgContext.close(); bgContext = null; }
-        bgGain = null;
-    } catch {
-        // ignore
-    } finally {
-        bgEnabled = false;
+    if (bgHowl) {
+        bgHowl.stop();
     }
+    bgEnabled = false;
 };
 
 export const setBackgroundVolume = (vol: number) => {
     bgVolume = Math.max(0, Math.min(0.4, vol));
-    if (bgGain) bgGain.gain.value = bgVolume;
+    if (bgHowl) bgHowl.volume(bgVolume);
 };
 export const getBackgroundVolume = () => bgVolume;
 export const isBackgroundEnabled = () => bgEnabled;
