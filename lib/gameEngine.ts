@@ -96,12 +96,68 @@ export class GameEngine {
                         pIdx = (pIdx + 1) % state.players.length;
                     }
                     break;
+                case 'reflect':
+                    if (state.activeStack) {
+                        const attackerIdx = (() => {
+                            let prev = state.turnIndex - state.direction;
+                            if (prev < 0) prev = state.players.length - 1;
+                            if (prev >= state.players.length) prev = 0;
+                            return prev;
+                        })();
+                        state.activeStack.targets = [state.players[attackerIdx].id];
+                        state.lastAction = `${player.name} reflected the stack to ${state.players[attackerIdx].name}!`;
+                    }
+                    break;
+                case 'steal_hand':
+                    {
+                        const nextIdx = this.getNextTurnIndex(state);
+                        const target = state.players[nextIdx];
+                        const stealCount = Math.min(2, target.hand.length);
+                        for (let i = 0; i < stealCount; i++) {
+                            const cardTaken = target.hand.pop();
+                            if (cardTaken) player.hand.push(cardTaken);
+                        }
+                        state.lastAction = `${player.name} stole ${stealCount} cards from ${target.name}`;
+                    }
+                    break;
+                case 'lock_color':
+                    {
+                        const colors: CardColor[] = ['red','blue','green','yellow','cyan'];
+                        const chosen = colors[Math.floor(Math.random() * colors.length)];
+                        state.lockedColor = chosen;
+                        state.lockedColorRounds = state.players.length;
+                        state.lastAction = `${player.name} locked color to ${chosen} for one round`;
+                    }
+                    break;
+                case 'bomb_timer':
+                    state.bomb = { countdown: 3, penalty: 10, ownerId: player.id };
+                    state.lastAction = `${player.name} planted a bomb! Explodes in 3 turns (+10 draw)`;
+                    break;
+                case 'copy_card':
+                    {
+                        const top = state.discardPile[state.discardPile.length - 2]; // previous before this copy
+                        if (top) {
+                            // Apply the top card's primary effect again
+                            this.applyCardEffect(state, top, player);
+                            state.lastAction = `${player.name} copied ${top.type} effect`;
+                        }
+                    }
+                    break;
+                case 'chaos_wild':
+                    {
+                        const effects: Array<'skip' | 'reverse' | 'double_turn' | 'steal_hand' | 'lock_color' | 'bomb_timer'> = ['skip','reverse','double_turn','steal_hand','lock_color','bomb_timer'];
+                        const pick = effects[Math.floor(Math.random() * effects.length)];
+                        // Apply the picked effect
+                        this.applyCardEffect(state, { ...card, type: pick }, player);
+                        state.lastAction = `${player.name} triggered CHAOS WILD -> ${pick}`;
+                    }
+                    break;
                 // Add complex logic as needed for steal_hand, lock_color, bomb_timer
             }
         });
 
         // 10% Self-Draw Penalty for Abnormal Draw Cards (+20, +60, +100, +200)
-        const abnormalDraws = ['+20', '+60', '+100', '+200'];
+        const abnormalDraws = ['+20', '+60', '+100', '+200', '+300'];
         if (abnormalDraws.includes(card.type)) {
             const penaltyPercent = 0.1;
             const drawAmount = StackResolver.getDrawAmount(card.type) * penaltyPercent;

@@ -307,7 +307,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                         )}
                                         {enableAbnormalDraws && (
                                             <div className="flex flex-wrap gap-2">
-                                                {['+20','+60','+100','+200'].map(t => {
+                                                {['+20','+60','+100','+200','+300'].map(t => {
                                                     const checked = allowedAbnormalDraws.includes(t);
                                                     return (
                                                         <label key={t} className={`px-3 py-1 rounded-lg border-2 border-zinc-900 font-black uppercase text-xs cursor-pointer ${checked ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-900'}`}>

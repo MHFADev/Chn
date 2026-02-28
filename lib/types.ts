@@ -6,7 +6,7 @@ export type CardType =
     // Normal Draws (40%)
     | '+2' | '+4' | '+6'
     // Abnormal Draws (10%)
-    | '+20' | '+60' | '+100' | '+200'
+    | '+20' | '+60' | '+100' | '+200' | '+300'
     // Unique Individual Chaos
     | 'reflect' | 'steal_hand' | 'hand_shuffle'
     | 'double_turn' | 'lock_color' | 'bomb_timer' | 'copy_card' | 'chaos_wild';
@@ -43,7 +43,7 @@ export interface RoomSettings {
     enableChaosCards?: boolean;
     allowedColors?: CardColor[];
     allowedNormalDraws?: ('+2' | '+4' | '+6')[];
-    allowedAbnormalDraws?: ('+20' | '+60' | '+100' | '+200')[];
+    allowedAbnormalDraws?: ('+20' | '+60' | '+100' | '+200' | '+300')[];
 }
 
 export interface GameState {
@@ -62,4 +62,6 @@ export interface GameState {
     winnerId: string | null;
     lastAction?: string;
     lockedColor?: CardColor | null;
+    lockedColorRounds?: number;
+    bomb?: { countdown: number; penalty: number; ownerId: string } | null;
 }

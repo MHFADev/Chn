@@ -108,6 +108,21 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         state.turnCount++;
         state.turnIndex = GameEngine.getNextTurnIndex(state);
         state.turnStartTime = Date.now();
+        if (state.lockedColorRounds && state.lockedColorRounds > 0) {
+            state.lockedColorRounds--;
+            if (state.lockedColorRounds <= 0) state.lockedColor = null;
+        }
+        if (state.bomb) {
+            state.bomb.countdown--;
+            if (state.bomb.countdown <= 0) {
+                const victim = state.players[state.turnIndex];
+                for (let i = 0; i < state.bomb.penalty; i++) {
+                    victim.hand.push(drawCard(state));
+                }
+                state.lastAction = `${victim.name} was hit by a bomb and drew ${state.bomb.penalty}!`;
+                state.bomb = null;
+            }
+        }
 
         const cardTypeName = firstCard.type === 'number' ? firstCard.value : firstCard.type.toUpperCase();
         state.lastAction = `${player.name} played ${cardsToPlay.length > 1 ? cardsToPlay.length + 'x ' : ''}${cardTypeName}`;
@@ -138,6 +153,21 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         state.turnCount++;
         state.turnIndex = GameEngine.getNextTurnIndex(state);
         state.turnStartTime = Date.now();
+        if (state.lockedColorRounds && state.lockedColorRounds > 0) {
+            state.lockedColorRounds--;
+            if (state.lockedColorRounds <= 0) state.lockedColor = null;
+        }
+        if (state.bomb) {
+            state.bomb.countdown--;
+            if (state.bomb.countdown <= 0) {
+                const victim = state.players[state.turnIndex];
+                for (let i = 0; i < state.bomb.penalty; i++) {
+                    victim.hand.push(drawCard(state));
+                }
+                state.lastAction = `${victim.name} was hit by a bomb and drew ${state.bomb.penalty}!`;
+                state.bomb = null;
+            }
+        }
         return res.status(200).json(state);
     }
 
