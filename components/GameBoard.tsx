@@ -3,7 +3,7 @@ import { GameState, Card as CardType } from '../lib/types';
 import { Card } from './Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, User, Settings2, Volume2, VolumeX } from 'lucide-react';
-import { playSound, setMasterVolume, getMasterVolume } from '../lib/audio/SoundManager';
+import { playSound, setMasterVolume, getMasterVolume, startBackgroundChill, stopBackgroundChill, getBackgroundVolume, setBackgroundVolume, isBackgroundEnabled } from '../lib/audio/SoundManager';
 
 interface GameBoardProps {
     state: GameState;
@@ -28,6 +28,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
 
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
     const [volume, setVolume] = React.useState(() => getMasterVolume());
+    const [bgOn, setBgOn] = React.useState(() => isBackgroundEnabled());
+    const [bgVolume, setBgVol] = React.useState(() => getBackgroundVolume());
     const [turnLimit, setTurnLimit] = React.useState<number>(() => state.settings?.turnTimeLimit || 20);
     const [enableNumbers, setEnableNumbers] = React.useState<boolean>(state.settings?.enableNumbers ?? true);
     const [enableActions, setEnableActions] = React.useState<boolean>(state.settings?.enableActions ?? true);
@@ -43,6 +45,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
         setVolume(val);
         setMasterVolume(val);
         if (val > 0) playSound('click');
+    };
+    const handleBgVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseFloat(e.target.value);
+        setBgVol(val);
+        setBackgroundVolume(val);
+    };
+    const handleBgToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked;
+        setBgOn(checked);
+        if (checked) {
+            startBackgroundChill();
+        } else {
+            stopBackgroundChill();
+        }
     };
 
     const timeRemaining = Math.max(0, (state.settings?.turnTimeLimit || 20) - Math.floor((now - state.turnStartTime) / 1000));
@@ -79,7 +95,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
         <div className="flex-1 w-full flex flex-col items-center justify-between p-6 relative z-0">
 
             {/* Opponents Area */}
-            <div className="w-full flex justify-around p-4 h-32 mt-4 max-w-5xl mx-auto">
+            <div className="w-full flex justify-around p-2 sm:p-4 h-24 sm:h-32 mt-2 sm:mt-4 max-w-5xl mx-auto overflow-x-auto gap-2">
                 {opponents.map((p, i) => {
                     const isTurn = state.players[state.turnIndex]?.id === p.id;
                     return (
@@ -99,7 +115,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
             </div>
 
             {/* Center Area */}
-            <div className="flex-1 w-full flex items-center justify-center gap-16 sm:gap-32 relative py-12">
+            <div className="flex-1 w-full flex items-center justify-center gap-8 sm:gap-16 relative py-6 sm:py-12">
                 {/* Active Stack Penalties */}
                 {state.activeStack && state.activeStack.totalDraw > 0 && (
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 text-center bg-red-500 border-4 border-zinc-900 text-white px-8 py-3 rounded-2xl font-black text-lg tracking-widest z-20 shadow-[6px_6px_0px_#18181b] animate-bounce">
@@ -112,7 +128,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                     whileHover={isMyTurn ? { scale: 1.05, y: -4, rotateZ: -2 } : {}}
                     whileTap={isMyTurn ? { scale: 0.95 } : {}}
                     onClick={isMyTurn ? onDraw : undefined}
-                    className={`w-[110px] h-[160px] rounded-2xl border-4 border-zinc-900 bg-zinc-900 shadow-[8px_8px_0px_#18181b] flex items-center justify-center cursor-pointer relative overflow-hidden group ${isMyTurn ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-transparent animate-soft-float z-10' : 'opacity-90'}`}
+                    className={`w-[80px] h-[118px] sm:w-[110px] sm:h-[160px] rounded-2xl border-4 border-zinc-900 bg-zinc-900 shadow-[8px_8px_0px_#18181b] flex items-center justify-center cursor-pointer relative overflow-hidden group ${isMyTurn ? 'ring-4 ring-yellow-400 ring-offset-4 ring-offset-transparent animate-soft-float z-10' : 'opacity-90'}`}
                 >
                     <img src="/card-back.jpg" alt="Deck" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                     <span className="text-3xl opacity-20 font-black tracking-widest -rotate-45 text-white drop-shadow-[2px_2px_0px_#000] relative z-0" style={{ fontFamily: 'Impact' }}>CHAOS</span>
@@ -120,7 +136,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                 </motion.div>
 
                 {/* Discard Pile */}
-                <div className="relative w-[110px] h-[160px]">
+                <div className="relative w-[80px] h-[118px] sm:w-[110px] sm:h-[160px]">
                     {topDiscard ? (
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -153,7 +169,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
             </div>
 
             {/* Info / Turn Timer Tracker */}
-            <div className="absolute bottom-48 sm:bottom-40 right-4 sm:right-8 flex flex-col gap-3 items-end z-10 pointer-events-none">
+            <div className="absolute bottom-32 sm:bottom-40 right-2 sm:right-8 flex flex-col gap-2 sm:gap-3 items-end z-10 pointer-events-none">
                 <div className="px-5 py-2 bg-white border-4 border-zinc-900 rounded-xl text-sm font-black flex items-center tracking-widest text-zinc-900 shadow-[4px_4px_0px_#18181b]">
                     <span className={`${timeRemaining < 6 ? 'text-red-500' : ''}`}>TIMER: {timeRemaining}s</span>
                 </div>
@@ -201,14 +217,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6"
                     >
-                        <div className="bg-white border-4 border-zinc-900 p-8 rounded-3xl max-w-sm w-full flex flex-col items-center gap-6 shadow-[8px_8px_0px_#18181b] relative">
+                        <div className="bg-white border-4 border-zinc-900 p-6 sm:p-8 rounded-3xl max-w-lg w-full flex flex-col items-center gap-6 shadow-[8px_8px_0px_#18181b] relative">
                             <button
                                 onClick={() => { playSound('click'); setIsSettingsOpen(false); }}
                                 className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-900 font-black text-2xl transition-colors"
                             >×</button>
-                            <h3 className="text-3xl font-black uppercase tracking-widest text-center text-zinc-900" style={{ fontFamily: 'Impact' }}>SETTINGS</h3>
+                            <h3 className="text-3xl font-black uppercase tracking-widest text-center text-zinc-900" style={{ fontFamily: 'Impact' }}>ROOM SETTINGS</h3>
 
-                            <div className="w-full flex flex-col gap-4">
+                            <div className="w-full flex flex-col gap-6">
                                 <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900">
                                     <div className="flex items-center justify-between">
                                         <span>Master Volume</span>
@@ -237,7 +253,26 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                                 className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
                                             />
                                         </label>
-                                        <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <label className="flex items-center justify-between font-black uppercase tracking-widest text-zinc-900 border-2 border-zinc-900 rounded-xl px-4 py-2 bg-yellow-50">
+                                                <span>Background Chill</span>
+                                                <input type="checkbox" checked={bgOn} onChange={handleBgToggle} />
+                                            </label>
+                                            <label className="flex flex-col gap-2 font-black uppercase tracking-widest text-zinc-900 border-2 border-zinc-900 rounded-xl px-4 py-2 bg-yellow-50">
+                                                <div className="flex items-center justify-between">
+                                                    <span>Background Volume</span>
+                                                    <span>{Math.round(bgVolume * 100)}%</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0" max="0.4" step="0.01"
+                                                    value={bgVolume}
+                                                    onChange={handleBgVolumeChange}
+                                                    className="w-full h-4 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900 border-2 border-zinc-900"
+                                                />
+                                            </label>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 border-2 border-zinc-900 rounded-xl p-4 bg-white">
                                             <label className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest">
                                                 <input type="checkbox" checked={enableNumbers} onChange={e => setEnableNumbers(e.target.checked)} />
                                                 Numbers
@@ -260,7 +295,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                             </label>
                                         </div>
                                         {enableNormalDraws && (
-                                            <div className="flex flex-wrap gap-2">
+                                            <div className="flex flex-wrap gap-2 border-2 border-zinc-900 rounded-xl p-3 bg-white">
                                                 {['+2','+4','+6'].map(t => {
                                                     const checked = allowedNormalDraws.includes(t);
                                                     return (
@@ -273,8 +308,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                             </div>
                                         )}
                                         {enableAbnormalDraws && (
-                                            <div className="flex flex-wrap gap-2">
-                                                {['+20','+60','+100','+200'].map(t => {
+                                            <div className="flex flex-wrap gap-2 border-2 border-zinc-900 rounded-xl p-3 bg-white">
+                                                {['+20','+60','+100','+200','+300'].map(t => {
                                                     const checked = allowedAbnormalDraws.includes(t);
                                                     return (
                                                         <label key={t} className={`px-3 py-1 rounded-lg border-2 border-zinc-900 font-black uppercase text-xs cursor-pointer ${checked ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-900'}`}>
@@ -285,7 +320,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ state, playerId, onDraw })
                                                 })}
                                             </div>
                                         )}
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-2 border-2 border-zinc-900 rounded-xl p-3 bg-white">
                                             {['red','blue','green','yellow','cyan'].map(c => (
                                                 <button
                                                     key={c}

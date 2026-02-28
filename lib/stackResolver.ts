@@ -63,6 +63,7 @@ export class StackResolver {
             case '+60': return 60;
             case '+100': return 100;
             case '+200': return 200;
+            case '+300': return 300;
             default: return 0;
         }
     }

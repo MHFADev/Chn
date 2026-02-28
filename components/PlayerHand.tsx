@@ -115,7 +115,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({ cards, onPlayCard, isMyT
     return (
         <>
             <div
-                className="relative w-full overflow-hidden px-2 py-8 sm:p-8 flex justify-center items-end h-[240px] sm:h-[280px]"
+                className="relative w-full overflow-hidden px-1 sm:px-2 py-6 sm:p-8 flex justify-center items-end h-[200px] sm:h-[280px]"
                 ref={containerRef}
             >
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10 transition-colors">

@@ -58,11 +58,11 @@ export function createBaseDeck(settings?: RoomSettings): Card[] {
     }
 
     if (enableAbnormalDraws) {
-        const abnormalTypes: ('+20' | '+60' | '+100' | '+200')[] = ['+20', '+60', '+100', '+200'];
+        const abnormalTypes: ('+20' | '+60' | '+100' | '+200' | '+300')[] = ['+20', '+60', '+100', '+200', '+300'];
         const allowedAbnormal = settings?.allowedAbnormalDraws && settings.allowedAbnormalDraws.length > 0
             ? settings.allowedAbnormalDraws
             : abnormalTypes;
-        const counts: Record<string, number> = { '+20': 4, '+60': 4, '+100': 2, '+200': 2 };
+        const counts: Record<string, number> = { '+20': 4, '+60': 4, '+100': 1, '+200': 1, '+300': 1 };
         for (const t of allowedAbnormal) {
             const n = counts[t] ?? 2;
             for (let i = 0; i < n; i++) {
